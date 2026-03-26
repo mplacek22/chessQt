@@ -1,0 +1,2 @@
+#include "bishop.h"
+

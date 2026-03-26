@@ -1,48 +1,42 @@
-#pragma once
-#include <QAbstractListModel>
-#include <QVector>
-#include <QString>
+//
+// Created by User on 04.03.2025.
+//
 
-class ChessBoard : public QAbstractListModel {
-    Q_OBJECT
-    Q_PROPERTY(QString fen READ fen WRITE setFen NOTIFY fenChanged)
-    Q_PROPERTY(int selectedIndex READ selectedIndex NOTIFY selectedIndexChanged)
+#ifndef BOARD_H
+#define BOARD_H
+#include <Coordinate.h>
+#include <memory>
 
+
+#include <Piece.h>
+
+
+class Board {
 public:
-    enum Roles { PieceRole = Qt::UserRole + 1, FileRole, RankRole };
+    static constexpr int BOARD_SIZE = 8;
 
-    explicit ChessBoard(QObject* parent = nullptr);
+    Board();
 
-    // QAbstractListModel
-    int rowCount(const QModelIndex& = {}) const override;
-    QVariant data(const QModelIndex& index, int role) const override;
-    QHash<int, QByteArray> roleNames() const override;
+    ~Board() = default;
 
-    // Properties
-    QString fen() const;
-    void setFen(const QString& fen);
-    int selectedIndex() const { return m_selectedIndex; }
+    void initialize();
 
-    Q_INVOKABLE void selectSquare(int file, int rank);
-    Q_INVOKABLE QString pieceAt(int file, int rank) const;
+    void display() const;
 
-signals:
-    void fenChanged();
-    void selectedIndexChanged();
-    void moveMade(int fromFile, int fromRank, int toFile, int toRank);
+    [[nodiscard]] std::shared_ptr<Piece> getPieceAt(const Coordinate &coordinate) const;
+
+    void setPieceAt(const Coordinate &coordinate, std::shared_ptr<Piece> piece);
+
+    void movePiece(const Coordinate &source, const Coordinate &destination);
+
+    void restart();
+
+
+    [[nodiscard]] bool isPathClear(Coordinate source, Coordinate destination) const;
 
 private:
-    // board[rank * 8 + file], rank 0 = rank 1, rank 7 = rank 8
-    QVector<QString> m_board; // "wK", "bQ", "" etc.
-    int m_selectedIndex = -1;
-
-    void loadFen(const QString& fen);
-    QString buildFen() const;
-    bool isValidMove(int fromFile, int fromRank, int toFile, int toRank) const;
-    bool isWhitePiece(const QString& p) const { return !p.isEmpty() && p[0] == 'w'; }
-    bool isBlackPiece(const QString& p) const { return !p.isEmpty() && p[0] == 'b'; }
-    int toIndex(int file, int rank) const { return rank * 8 + file; }
-
-    QString m_fen;
-    bool m_whiteTurn = true;
+    std::shared_ptr<Piece> board_[BOARD_SIZE][BOARD_SIZE];
 };
+
+
+#endif //BOARD_H
