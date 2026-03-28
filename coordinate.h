@@ -1,5 +1,4 @@
 #pragma once
-// #include <iostream>
 #include <stdexcept>
 
 // template<size_t boardSize = 8>
@@ -23,7 +22,7 @@ struct Coordinate {
     }
 
     [[nodiscard]] std::string toChessNotation() const {
-        return std::string{static_cast<char>('a' + file_), static_cast<char>('1' + rank_)};
+        return std::string{fileChessNotation(), rankChessNotation()};
     }
 
     bool operator==(const Coordinate &aCoordinate) const {
@@ -41,6 +40,14 @@ struct Coordinate {
 
     [[nodiscard]] int rank() const {
         return rank_;
+    }
+
+    [[nodiscard]] char fileChessNotation() const {
+        return static_cast<char>('a' + file_);
+    }
+
+    [[nodiscard]] char rankChessNotation() const {
+        return static_cast<char>('1' + rank_);
     }
 
 private:

@@ -5,5 +5,6 @@ enum class MoveType{
     CAPTURE,
     PROMOTION,
     ENPASSANT,
-    CASTLING
+    CASTLE_KINGSIDE,
+    CASTLE_QUEENSIDE
 };

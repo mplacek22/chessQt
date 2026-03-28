@@ -9,11 +9,8 @@ public:
     explicit Rook(const Color color)
         : Piece(color) {
         type_ = PieceType::ROOK;
+        name_ = 'R';
         // isPathClearRequired_ = true;
-        if (color == Color::WHITE)
-            name_ = 'R';
-        else
-            name_ = 'r';
     }
 };
 

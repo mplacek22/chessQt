@@ -1,7 +1,7 @@
 #include "boardmodel.h"
 
-BoardModel::BoardModel(Game* game, QObject* parent)
-    : QAbstractListModel(parent), game_(game) {}
+BoardModel::BoardModel(std::shared_ptr<Game> game, QObject* parent)
+    : QAbstractListModel(parent), game_(std::move(game)) {}
 
 int BoardModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid()) return 0;
@@ -12,12 +12,12 @@ QVariant BoardModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || index.row() >= 64) return {};
 
     const int gridRow = index.row() / Board::BOARD_SIZE;
-    const int col     = index.row() % Board::BOARD_SIZE;
+    const int file     = index.row() % Board::BOARD_SIZE;
 
     // Flip: visual top (gridRow 0) → board rank 7 (black's back rank)
-    const int rank = Board::BOARD_SIZE - 1 - gridRow;
+    const int rank = Board::BOARD_SIZE - 1 - gridRow; //flipping
 
-    const Coordinate coord(rank, col);
+    const Coordinate coord(rank, file);
     const auto piece = game_->board().getPieceAt(coord);
 
     switch (role) {
@@ -26,9 +26,9 @@ QVariant BoardModel::data(const QModelIndex& index, int role) const {
     case PieceColorRole:
         return piece ? colorToString(piece->color()) : QString("");
     case IsSelectedRole:
-        return (selectedRow_ == rank && selectedCol_ == col);
+        return (selectedRow_ == rank && selectedCol_ == file);
     case IsHighlightedRole:
-        return isHighlighted(rank, col);
+        return isHighlighted(rank, file);
     default:
         return {};
     }
@@ -43,23 +43,25 @@ QHash<int, QByteArray> BoardModel::roleNames() const {
             };
 }
 
-void BoardModel::selectSquare(int gridRow, int col) {
+void BoardModel::selectSquare(int gridRow, int gridCol) {
     // Nothing selected yet — select this square if it has a piece
     const int rank = Board::BOARD_SIZE - 1 - gridRow;
+    const int file = gridCol;
     if (selectedRow_ == -1) {
-        Coordinate coord(rank, col);
+        Coordinate coord(rank, file);
         auto piece = game_->board().getPieceAt(coord);
         if (!piece) return;
+        if (piece->color() != game_->currentPlayer()) return;
 
         selectedRow_ = rank;
-        selectedCol_ = col;
+        selectedCol_ = file;
         emit selectionChanged();
         emit dataChanged(index(0), index(63));
         return;
     }
 
     // Same square clicked — deselect
-    if (selectedRow_ == rank && selectedCol_ == col) {
+    if (selectedRow_ == rank && selectedCol_ == file) {
         selectedRow_ = -1;
         selectedCol_ = -1;
         highlightedSquares_.clear();
@@ -70,9 +72,11 @@ void BoardModel::selectSquare(int gridRow, int col) {
 
     // Second square clicked — attempt the move
     Coordinate source(selectedRow_, selectedCol_);
-    Coordinate destination(rank, col);
+    Coordinate destination(rank, file);
+    Move move(source, destination, game_->currentPlayer());
 
-    game_->board().movePiece(source, destination);
+
+    game_->processMove(move);
     bool moved = true;
 
     selectedRow_ = -1;

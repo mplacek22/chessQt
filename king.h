@@ -9,11 +9,7 @@ public:
     explicit King(Color color)
         : Piece(color) {
         type_ = PieceType::KING;
-
-        if (color == Color::WHITE)
-            name_ = 'K';
-        else
-            name_ = 'k';
+        name_ = 'K';
     }
 };
 

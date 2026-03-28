@@ -4,11 +4,10 @@
 
 #ifndef BOARD_H
 #define BOARD_H
-#include <Coordinate.h>
+#include "Coordinate.h"
 #include <memory>
-
-
-#include <Piece.h>
+#include <array>
+#include "Piece.h"
 
 
 class Board {
@@ -35,7 +34,8 @@ public:
     [[nodiscard]] bool isPathClear(Coordinate source, Coordinate destination) const;
 
 private:
-    std::shared_ptr<Piece> board_[BOARD_SIZE][BOARD_SIZE];
+    std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board_;
+    void clear();
 };
 
 

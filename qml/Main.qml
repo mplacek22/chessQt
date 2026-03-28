@@ -37,7 +37,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import Chess 1.0
 
-Window {
+ApplicationWindow {
     id: root
     width: 700
     height: 780
@@ -45,7 +45,6 @@ Window {
     title: "Chess"
     color: "#2b2b2b"
 
-    // gameController is injected via setContextProperty in main.cpp
     Component.onCompleted: gameController.startGame()
 
     Connections {
@@ -53,6 +52,26 @@ Window {
         function onGameOver(winner) {
             resultText.text = winner + " wins!"
             resultOverlay.visible = true
+        }
+    }
+
+    menuBar: MenuBar {
+        Menu {
+            title: qsTr("Game")
+            Action {
+                text: qsTr("New game")
+                shortcut: StandardKey.New
+                onTriggered: gameController.restartGame()
+            }
+            Action { text: qsTr("Open game") }
+            Action { text: qsTr("Save game") }
+            Action { text: qsTr("Save game as") }
+            MenuSeparator { }
+            Action {
+                text: qsTr("Quit")
+                shortcut: StandardKey.Quit
+                onTriggered:Qt.quit()
+            }
         }
     }
 
@@ -78,59 +97,43 @@ Window {
             }
         }
 
-        // The board itself
         Board {
             id: chessBoard
             width: 560
             height: 560
             model: gameController.board
-
-            onSquareClicked: (row, col) => {
-                // BoardModel.selectSquare() handles move logic on the C++ side
-                // and emits boardChanged() / moveExecuted() back to QML
-            }
-        }
-
-        // Buttons
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 12
-
-            Button {
-                text: "New Game"
-                onClicked: gameController.restartGame()
-            }
+            enabled: gameController.status === "in_progress"
         }
     }
 
     // Game-over overlay
-    Rectangle {
-        id: resultOverlay
-        anchors.fill: parent
-        color: "#aa000000"
-        visible: false
-        radius: 4
+        Rectangle {
+            id: resultOverlay
+            anchors.fill: parent
+            color: "#aa000000"
+            visible: false
+            radius: 4
 
-        Column {
-            anchors.centerIn: parent
-            spacing: 20
+            Column {
+                anchors.centerIn: parent
+                spacing: 20
 
-            Text {
-                id: resultText
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: "white"
-                font.pixelSize: 36
-                font.bold: true
-            }
+                Text {
+                    id: resultText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "white"
+                    font.pixelSize: 36
+                    font.bold: true
+                }
 
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "Play Again"
-                onClicked: {
-                    resultOverlay.visible = false
-                    gameController.restartGame()
+                Button {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Play Again"
+                    onClicked: {
+                        resultOverlay.visible = false
+                        gameController.restartGame()
+                    }
                 }
             }
         }
-    }
 }

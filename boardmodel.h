@@ -15,7 +15,7 @@ public:
         IsSelectedRole,
     };
 
-    explicit BoardModel(Game* game, QObject* parent = nullptr);
+    explicit BoardModel(std::shared_ptr<Game> game, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
@@ -33,7 +33,7 @@ signals:
     void moveExecuted();
 
 private:
-    Game* game_;
+    std::shared_ptr<Game> game_;
     int selectedRow_ = -1;
     int selectedCol_ = -1;
     QList<QPair<int,int>> highlightedSquares_;

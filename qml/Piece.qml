@@ -26,7 +26,7 @@
 import QtQuick 2.15
 
 Item {
-    id: root
+    id: piece
 
     property string pieceType: ""   // "King", "Queen", "Rook", etc.
     property string pieceColor: ""  // "white" or "black"
@@ -41,15 +41,15 @@ Item {
     Text {
         anchors.centerIn: parent
         text: (pieceType && pieceColor)
-              ? (root.pieceSymbols[pieceColor]?.[pieceType] ?? "")
+              ? (piece.pieceSymbols[pieceColor]?.[pieceType] ?? "")
               : ""
         font.pixelSize: parent.width * 0.7
         font.family: "serif"
         style: Text.Outline
-        styleColor: root.pieceColor === "white" ? "#222" : "#eee"
-        color: root.pieceColor === "white" ? "#f0f0f0" : "#1a1a1a"
+        styleColor: piece.pieceColor === "white" ? "#222" : "#eee"
+        color: piece.pieceColor === "white" ? "#f0f0f0" : "#1a1a1a"
 
-        scale: root.isSelected ? 1.1 : 1.0
+        scale: piece.isSelected ? 1.1 : 1.0
         Behavior on scale { NumberAnimation { duration: 120 } }
     }
 }

@@ -9,10 +9,6 @@ public:
     explicit Pawn(const Color color)
         : Piece(color) {
         type_ = PieceType::PAWN;
-        if (color == Color::WHITE)
-            name_ = 'P';
-        else
-            name_ = 'p';
     }
 };
 

@@ -9,10 +9,7 @@ public:
     explicit Bishop(const Color color)
         : Piece(color) {
         type_ = PieceType::BISHOP;
-        if (color == Color::WHITE)
-            name_ = 'B';
-        else
-            name_ = 'b';
+        name_ = 'B';
     }
 };
 

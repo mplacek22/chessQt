@@ -21,6 +21,7 @@ public:
     [[nodiscard]] Color currentPlayer() const { return currentPlayer_; }
     [[nodiscard]] GameStatus status()   const { return status_; }
 
+    void processMove(Move &currentMove);
 
 private:
     Color currentPlayer_ = Color::WHITE;
@@ -31,8 +32,6 @@ private:
     void switchPlayer();
 
     void executeMove(const Move &move);
-
-    void processMove(const Move &move);
 
     void updateGameStatus();
 };

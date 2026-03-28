@@ -41,6 +41,7 @@ qt_add_qml_module(appchess
         SOURCES gameStatus.h
         SOURCES boardmodel.h boardmodel.cpp
         SOURCES gamecontroller.h gamecontroller.cpp
+        QML_FILES
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

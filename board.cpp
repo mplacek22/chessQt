@@ -66,10 +66,15 @@ void Board::movePiece(const Coordinate& source, const Coordinate& destination) {
 }
 
 void Board::restart() {
+    clear();
     initialize();
 }
 
 
 std::shared_ptr<Piece> Board::getPieceAt(const Coordinate& coordinate) const {
     return board_[coordinate.rank()][coordinate.file()];
+}
+
+void Board::clear() {
+    board_ = {};
 }

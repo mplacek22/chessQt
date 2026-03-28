@@ -9,10 +9,7 @@ public:
     explicit Knight(Color color)
         : Piece(color) {
         type_ = PieceType::KNIGHT;
-        if (color == Color::WHITE)
-            name_ = 'N';
-        else
-            name_ = 'n';
+        name_ = 'N';
     }
 };
 
