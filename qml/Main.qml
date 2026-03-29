@@ -39,13 +39,40 @@ import Chess 1.0
 
 ApplicationWindow {
     id: root
-    width: 700
-    height: 780
+    width: 800
+    height: 600
+    minimumHeight: 500
+    minimumWidth: 600
     visible: true
     title: "Chess"
-    color: "#2b2b2b"
+    // color: "#2b2b2b"
 
     Component.onCompleted: gameController.startGame()
+
+    palette {
+        // Backgrounds
+        window: "#1a1816"
+        base: "#2c2a27"
+        alternateBase: "#3d3a35"
+
+        // Text
+        windowText: "#c8c0b5"
+        text: "#c8c0b5"
+        placeholderText: "#8a847c"
+        mid: "#8a847c"
+
+        // Accent (matches white piece colour)
+        highlight: "#d3b88c"
+        highlightedText: "#1a1816"
+        button: "#3d3a35"
+        buttonText: "#c8c0b5"
+
+        // Borders
+        dark: "#141210"
+        shadow: "#0d0b09"
+        light: "#4a4640"
+        midlight: "#3d3a35"
+    }
 
     Connections {
         target: gameController
@@ -75,36 +102,44 @@ ApplicationWindow {
         }
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        spacing: 16
+    SplitView {
+        anchors.fill: parent
+        orientation: Qt.Horizontal
 
-        // Status bar
-        Rectangle {
-            Layout.fillWidth: true
-            height: 44
-            radius: 8
-            color: "#3c3c3c"
+        Item {
+            SplitView.fillWidth: true
+            SplitView.fillHeight: true
 
-            Text {
+            Board {
+                id: chessBoard
                 anchors.centerIn: parent
-                text: gameController.currentPlayer === "white"
-                      ? "⬜  White to move"
-                      : "⬛  Black to move"
-                color: "#e8e8e8"
-                font.pixelSize: 16
-                font.family: "serif"
+                width: Math.min(parent.width, parent.height)
+                height: width  // always square
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                model: gameController.board
+                enabled: gameController.status === "in_progress"
+            }
+
+        }
+
+        ColumnLayout {
+            SplitView.fillWidth: true
+            SplitView.fillHeight: true
+            SplitView.minimumWidth: 200
+
+            spacing: 8
+
+
+            MoveList {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
         }
 
-        Board {
-            id: chessBoard
-            width: 560
-            height: 560
-            model: gameController.board
-            enabled: gameController.status === "in_progress"
-        }
+
     }
+
+
 
     // Game-over overlay
         Rectangle {

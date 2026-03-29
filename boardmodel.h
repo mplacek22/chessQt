@@ -9,10 +9,9 @@ class BoardModel : public QAbstractListModel {
 
 public:
     enum Roles {
-        PieceTypeRole = Qt::UserRole + 1,
-        PieceColorRole,
         IsHighlightedRole,
         IsSelectedRole,
+        SvgPathRole
     };
 
     explicit BoardModel(std::shared_ptr<Game> game, QObject* parent = nullptr);

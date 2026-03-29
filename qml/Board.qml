@@ -1,119 +1,3 @@
-// import QtQuick 2.15
-
-// Item {
-//     id: board
-
-//     property int labelSize: 20
-//     property int squareSize: (Math.min(width, height) - labelSize) / 8
-
-//     // // Drag state
-//     // property int dragFromFile: -1
-//     // property int dragFromRank: -1
-//     // property string dragPiece: ""
-//     // property real dragX: 0
-//     // property real dragY: 0
-//     // property bool isDragging: false
-
-//     signal squareClicked(int file, int rank)
-
-//     Item {
-//         id: boardContainer
-//         anchors.left: parent.left
-//         anchors.top: parent.top
-//         anchors.leftMargin: labelSize
-//         anchors.topMargin: 0
-
-//         implicitWidth: squareSize * 8
-//         implicitHeight: squareSize * 8
-
-//         Grid {
-//             ranks: 8
-//             columns: 8
-//             anchors.fill: parent
-
-//             Repeater {
-//                 model: 64
-
-//                 Rectangle {
-//                     width: board.squareSize
-//                     height: board.squareSize
-
-//                     property int file: index % 8
-//                     property int rank: 7 - Math.floor(index / 8)
-
-//                     color: (file + rank) % 2 === 0 ? "#656256" : "#828F7B"
-
-//                     // Selection highlight
-//                     Rectangle {
-//                             anchors.fill: parent
-//                             color: "#9EBC9F"
-//                             visible: chessController.selectedIndex === (rank * 8 + file)
-//                             z: 1
-//                         }
-
-//                     MouseArea {
-//                         anchors.fill: parent
-//                         onClicked: chessController.selectSquare(file, rank)
-//                     }
-
-//                     Piece {
-//                         anchors.fill: parent
-//                         piece: chessController.pieceAt(file, rank)
-//                         z: 2
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-//     Column {
-//         anchors.right: boardContainer.left
-//         anchors.top: boardContainer.top
-//         spacing: 0
-
-//         Repeater {
-//             model: 8
-
-//             Rectangle {
-//                 width: labelSize
-//                 height: board.squareSize
-//                 color: "transparent"
-
-//                 Text {
-//                     anchors.centerIn: parent
-//                     text: (8 - index)
-//                     color: "white"
-//                     font.pixelSize: 12
-//                 }
-//             }
-//         }
-//     }
-
-//     rank {
-//         anchors.top: boardContainer.bottom
-//         anchors.left: boardContainer.left
-//         spacing: 0
-
-//         Repeater {
-//             model: 8
-
-//             Rectangle {
-//                 width: board.squareSize
-//                 height: board.labelSize
-//                 color: "transparent"
-
-//                 Text {
-//                     anchors.centerIn: parent
-//                     text: String.fromCharCode(65 + index) // A–H
-//                     color: "white"
-//                     font.pixelSize: 12
-//                 }
-//             }
-//         }
-//     }
-// }
-
-// Board.qml
 import QtQuick 2.15
 import Chess 1.0
 
@@ -124,12 +8,38 @@ Item {
     property int labelSize: 20
     signal squareClicked(int rank, int file)
 
+    // Ranks
+    Column {
+        id: rankLabels
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: fileLabels.top
+        width: labelSize
+        Repeater {
+            model: 8
+            Text {
+                width: labelSize
+                height: rankLabels.height / 8
+                text: (8 - index).toString()
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: labelSize * 0.7
+                color: palette.text
+            }
+        }
+    }
+
+
     GridView {
         id: grid
-        anchors.fill: parent
+        anchors.left: rankLabels.right
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: fileLabels.top
         model: board.model
         cellWidth:  width  / 8
         cellHeight: height / 8
+        interactive: false
 
         delegate: Rectangle {
             id: square
@@ -139,9 +49,9 @@ Item {
             // Checkerboard coloring
             readonly property bool isLight: (index % 8 + Math.floor(index / 8)) % 2 === 0
             color: {
-                if (model.isHighlighted) return "#aac465"   // legal-move hint
-                if (model.isSelected)   return "#f6f669"    // selected square
-                return isLight ? "#f0d9b5" : "#b58863"
+                // if (model.isHighlighted) return "#9EBC9F"   // legal-move hint
+                if (model.isSelected)   return "#9EBC9F"    // selected square
+                return isLight ? "#828F7B" : "#656256"
             }
 
             Behavior on color { ColorAnimation { duration: 100 } }
@@ -149,8 +59,7 @@ Item {
             Piece {
                 anchors.fill: parent
                 anchors.margins: 4
-                pieceType:  model.pieceType   ?? ""
-                pieceColor: model.pieceColor  ?? ""
+                svgPath:  model.svgPath ?? ""
                 isSelected: model.isSelected  ?? false
             }
 
@@ -165,51 +74,26 @@ Item {
             }
         }
     }
+
+    // Files
     Row {
-        anchors.right: grid.left
-        anchors.top: grid.top
-        spacing: 0
+        id: fileLabels
+        anchors.left: rankLabels.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: labelSize
 
         Repeater {
             model: 8
-
-            Rectangle {
-                width: labelSize
-                height: board.squareSize
-                color: "transparent"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: (8 - index)
-                    color: "white"
-                    font.pixelSize: 12
-                }
+            Text {
+                width: fileLabels.width / 8
+                height: labelSize
+                text: String.fromCharCode(97 + index)
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: labelSize * 0.7
+                color: palette.text
             }
         }
     }
 }
-
-
-
-//     rank {
-//         anchors.top: boardContainer.bottom
-//         anchors.left: boardContainer.left
-//         spacing: 0
-
-//         Repeater {
-//             model: 8
-
-//             Rectangle {
-//                 width: board.squareSize
-//                 height: board.labelSize
-//                 color: "transparent"
-
-//                 Text {
-//                     anchors.centerIn: parent
-//                     text: String.fromCharCode(65 + index) // A–H
-//                     color: "white"
-//                     font.pixelSize: 12
-//                 }
-//             }
-//         }
-//     }

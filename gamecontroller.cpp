@@ -20,6 +20,7 @@ void GameController::restartGame() {
     game_->restart();
     emit statusChanged();
     emit currentPlayerChanged();
+    emit movesChanged();
     boardModel_->refreshAll();
 }
 
@@ -40,6 +41,7 @@ QString GameController::status() const {
 
 void GameController::onMoveExecuted() {
     emit currentPlayerChanged();
+    emit movesChanged();
 
     GameStatus s = game_->status();
     if (s == GameStatus::WHITE_WIN) {
@@ -52,4 +54,17 @@ void GameController::onMoveExecuted() {
         emit statusChanged();
         emit gameOver("Nobody — it's a draw");
     }
+}
+
+QStringList GameController::movesList() const {
+    QStringList result;
+    const auto& moves = game_->movesHistory();
+    for (size_t i = 0; i < moves.size(); i += 2) {
+        QString entry = QString("%1. %2").arg(i/2 + 1)
+        .arg(QString::fromStdString(Move::toChessNotation(moves[i])));
+        if (i + 1 < moves.size())
+            entry += "  " + QString::fromStdString(Move::toChessNotation(moves[i+1]));
+        result.append(entry);
+    }
+    return result;
 }

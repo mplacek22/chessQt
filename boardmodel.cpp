@@ -21,14 +21,16 @@ QVariant BoardModel::data(const QModelIndex& index, int role) const {
     const auto piece = game_->board().getPieceAt(coord);
 
     switch (role) {
-    case PieceTypeRole:
-        return piece ? pieceTypeToString(piece->type()) : QString("");
-    case PieceColorRole:
-        return piece ? colorToString(piece->color()) : QString("");
     case IsSelectedRole:
         return (selectedRow_ == rank && selectedCol_ == file);
     case IsHighlightedRole:
         return isHighlighted(rank, file);
+    case SvgPathRole: {
+            if (!piece) return QString("");
+            return QString("pieces/%1_%2.svg")
+                .arg(colorToString(piece->color()))
+                .arg(pieceTypeToString(piece->type()));
+        }
     default:
         return {};
     }
@@ -36,11 +38,10 @@ QVariant BoardModel::data(const QModelIndex& index, int role) const {
 
 QHash<int, QByteArray> BoardModel::roleNames() const {
     return {
-            { PieceTypeRole,    "pieceType"     },
-            { PieceColorRole,   "pieceColor"    },
-            { IsSelectedRole,   "isSelected"    },
-            { IsHighlightedRole,"isHighlighted" },
-            };
+        { IsSelectedRole, "isSelected"},
+        { IsHighlightedRole,"isHighlighted"},
+        { SvgPathRole, "svgPath"}
+    };
 }
 
 void BoardModel::selectSquare(int gridRow, int gridCol) {
@@ -102,16 +103,16 @@ bool BoardModel::isHighlighted(int row, int col) const {
 
 QString BoardModel::pieceTypeToString(PieceType type) const {
     switch (type) {
-    case PieceType::KING:   return "King";
-    case PieceType::QUEEN:  return "Queen";
-    case PieceType::ROOK:   return "Rook";
-    case PieceType::BISHOP: return "Bishop";
-    case PieceType::KNIGHT: return "Knight";
-    case PieceType::PAWN:   return "Pawn";
+    case PieceType::KING:   return "king";
+    case PieceType::QUEEN:  return "queen";
+    case PieceType::ROOK:   return "rook";
+    case PieceType::BISHOP: return "bishop";
+    case PieceType::KNIGHT: return "knight";
+    case PieceType::PAWN:   return "pawn";
     default:                return "";
     }
 }
 
 QString BoardModel::colorToString(Color color) const {
-    return color == Color::WHITE ? "white" : "black";
+    return color == Color::WHITE ? "w" : "b";
 }

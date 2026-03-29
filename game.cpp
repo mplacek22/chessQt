@@ -1,5 +1,4 @@
 #include "game.h"
-#include <iostream>
 
 Game::Game() {}
 
@@ -35,6 +34,7 @@ void Game::start() {
 void Game::restart() {
     board_.restart();
     currentPlayer_ = Color::WHITE;
+    movesHistory_.clear();
     start();
 }
 
@@ -56,11 +56,9 @@ void Game::processMove(Move& move) {
     move.movingPiece = board_.getPieceAt(move.source);
     move.capturedPiece = board_.getPieceAt(move.destination);
     // todo: update move.moveType and move.promotionPieceType
-    movesHistory_.push(move);
+    movesHistory_.push_back(move);
     executeMove(move);
     updateGameStatus();
     move.gameStatus = status_;
     switchPlayer();
-    std::cout << Move::toChessNotation(move) << std::endl;
-
 }
