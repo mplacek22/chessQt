@@ -1,5 +1,4 @@
-#ifndef QUEEN_H
-#define QUEEN_H
+#pragma once
 
 #include <Piece.h>
 
@@ -11,6 +10,16 @@ public:
         type_ = PieceType::QUEEN;
         name_ = 'Q';
     }
-};
 
-#endif // QUEEN_H
+    std::span<const std::array<int, 2>> getMoveDirections() const override {
+        return MOVE_DIRECTIONS;
+    }
+
+    bool isSliding() const override { return true; }
+
+private:
+    static constexpr std::array<std::array<int, 2>, 8> MOVE_DIRECTIONS = {{
+        { 1,  0}, {-1,  0}, { 0,  1}, { 0, -1},
+        { 1,  1}, { 1, -1}, {-1,  1}, {-1, -1}
+    }};
+};

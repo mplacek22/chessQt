@@ -11,6 +11,16 @@ public:
         type_ = PieceType::BISHOP;
         name_ = 'B';
     }
+
+    std::span<const std::array<int, 2>> getMoveDirections() const override {
+        return DIRECTIONS;
+    }
+    bool isSliding() const override { return true; }
+
+private:
+    static constexpr std::array<std::array<int, 2>, 4> DIRECTIONS = {{
+        { 1,  1}, { 1, -1}, {-1,  1}, {-1, -1}
+    }};
 };
 
 #endif // BISHOP_H

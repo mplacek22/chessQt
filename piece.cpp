@@ -31,3 +31,116 @@ std::shared_ptr<Piece> Piece::create(Color color, const PieceType pieceType) {
         return nullptr;
     }
 }
+
+Coordinate Piece::findKing(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board) const
+{
+    for (int r = 0; r < board.size(); r++) {
+        for (int f = 0; f < board.size(); f++) {
+            const auto& piece = board[r][f];
+            if (piece && piece->type() == PieceType::KING && piece->color() == color_ ) {
+                return {r, f};
+            }
+        }
+    }
+    throw std::runtime_error("King not found on board");
+}
+
+std::vector<Coordinate> Piece::computeCheckers(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board) const
+{
+    std::vector<Coordinate> checkers;
+    auto kingPosition = findKing(board);
+
+    // for (int r = 0; r < board.size(); r++) {
+    //     for (int f = 0; f < 8; f++) {
+    //         const auto piece = board[r][f];
+    //         if (!piece || piece->color() != color_) continue;
+
+    //         for (const auto& m : piece->calculatePseudoLegalMoves(board, {r, f})) {
+    //             if (m->destination == kingPosition) {
+    //                 checkers.push_back({r, f});
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+    return checkers;
+}
+
+std::vector<std::shared_ptr<Move> > Piece::calculatePseudoLegalMoves(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board, const Coordinate &source)
+{
+    std::vector<std::shared_ptr<Move> > moves;
+
+    for (const auto& dir : getMoveDirections()) {
+        int rank = source.rank();
+        int file = source.file();
+
+        do {
+            rank += dir[0];
+            file += dir[1];
+
+            if (!inBounds(rank, file)) break;
+
+            Coordinate destination {rank, file};
+
+            if (isFriendly(board, destination)) break;
+
+            auto move = std::make_shared<Move>(source, destination, color_);
+            move->movingPiece = board[source.rank()][source.file()];
+            const auto& capturedPiece = board[rank][file];
+            if (capturedPiece) {
+                move->moveType = MoveType::CAPTURE;
+                move->capturedPiece = capturedPiece;
+            }
+            else {
+                move->moveType = MoveType::NORMAL;
+            }
+            moves.push_back(move);
+
+            if (isEnemy(board, destination)) break;
+
+        } while (isSliding());
+    }
+
+    return moves;
+}
+
+const bool Piece::isEnemy(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board, Coordinate &coord)
+{
+    const auto& target = board[coord.rank()][coord.file()];
+    if (target) {
+        return target->color() != color_;;
+    }
+    return false;
+}
+
+std::vector<std::shared_ptr<Move> > Piece::calculatePossibleMoves(
+    const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board,
+    const Coordinate &source,
+    std::optional<Move> lastMove
+) {
+    std::vector<std::shared_ptr<Move> > moves;
+    // auto checkers = computeCheckers(board);
+    // implement this
+    bool isCheck = false;
+
+    // if double check only king can move
+    // if (checkers.size() > 1 && type_ != PieceType::KING) {
+    //     return moves;
+    // }
+    if (isCheck && type_ != PieceType::KING) {
+        return moves;
+    }
+
+    moves = calculatePseudoLegalMoves(board, source);
+
+    return moves;
+}
+
+const bool Piece::isFriendly(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board, Coordinate &coord)
+{
+    const auto& target = board[coord.rank()][coord.file()];
+    if (target) {
+        return target->color() == color_;;
+    }
+    return false;
+}

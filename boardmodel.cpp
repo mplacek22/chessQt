@@ -45,52 +45,19 @@ QHash<int, QByteArray> BoardModel::roleNames() const {
 }
 
 void BoardModel::selectSquare(int gridRow, int gridCol) {
-    // Nothing selected yet — select this square if it has a piece
     const int rank = Board::BOARD_SIZE - 1 - gridRow;
     const int file = gridCol;
     if (selectedRow_ == -1) {
-        Coordinate coord(rank, file);
-        auto piece = game_->board().getPieceAt(coord);
-        if (!piece) return;
-        if (piece->color() != game_->currentPlayer()) return;
-
-        selectedRow_ = rank;
-        selectedCol_ = file;
-        emit selectionChanged();
-        emit dataChanged(index(0), index(63));
+        selectSourceSquare(rank, file);
         return;
     }
 
     // Same square clicked — deselect
     if (selectedRow_ == rank && selectedCol_ == file) {
-        selectedRow_ = -1;
-        selectedCol_ = -1;
-        highlightedSquares_.clear();
-        emit selectionChanged();
-        emit dataChanged(index(0), index(63));
-        return;
+        deselect();
     }
 
-    // Second square clicked — attempt the move
-    Coordinate source(selectedRow_, selectedCol_);
-    Coordinate destination(rank, file);
-    Move move(source, destination, game_->currentPlayer());
-
-
-    game_->processMove(move);
-    bool moved = true;
-
-    selectedRow_ = -1;
-    selectedCol_ = -1;
-    highlightedSquares_.clear();
-
-    if (moved) {
-        emit moveExecuted();
-        emit boardChanged();
-    }
-
-    emit selectionChanged();
-    emit dataChanged(index(0), index(63));
+    selectDestinationSquare(rank, file);
 }
 
 void BoardModel::refreshAll() {
@@ -115,4 +82,58 @@ QString BoardModel::pieceTypeToString(PieceType type) const {
 
 QString BoardModel::colorToString(Color color) const {
     return color == Color::WHITE ? "w" : "b";
+}
+
+void BoardModel::selectSourceSquare(int rank, int file)
+{
+    Coordinate coord(rank, file);
+    auto piece = game_->board().getPieceAt(coord);
+    if (!piece) return;
+    if (piece->color() != game_->currentPlayer()) return;
+
+    selectedRow_ = rank;
+    selectedCol_ = file;
+
+
+    activeMoves_ = piece->calculatePossibleMoves(
+        game_->board().board(),
+        {rank, file},
+        game_->movesHistory().empty() ? std::nullopt : std::optional(game_->movesHistory().back())
+    );
+    highlightedSquares_.clear();
+    for (const auto& move : activeMoves_)
+        highlightedSquares_.append({move->destination.rank(), move->destination.file()});
+
+    emit selectionChanged();
+    emit dataChanged(index(0), index(63));
+}
+
+void BoardModel::deselect()
+{
+    selectedRow_ = -1;
+    selectedCol_ = -1;
+    highlightedSquares_.clear();
+    emit selectionChanged();
+    emit dataChanged(index(0), index(63));
+}
+
+void BoardModel::selectDestinationSquare(int rank, int file)
+{
+    // Second square clicked — attempt the move
+    Coordinate destination(rank, file);
+    auto it = std::find_if(activeMoves_.begin(), activeMoves_.end(),
+        [&](const std::shared_ptr<Move>& m) {
+       return m->destination == destination;
+    });
+
+    if (it != activeMoves_.end()) {
+        game_->processMove(**it);
+        selectedRow_ = -1;
+        selectedCol_ = -1;
+        highlightedSquares_.clear();
+        emit moveExecuted();
+        emit boardChanged();
+        emit selectionChanged();
+        emit dataChanged(index(0), index(63));
+    }
 }

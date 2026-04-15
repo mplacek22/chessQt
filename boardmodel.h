@@ -36,8 +36,14 @@ private:
     int selectedRow_ = -1;
     int selectedCol_ = -1;
     QList<QPair<int,int>> highlightedSquares_;
+    std::vector<std::shared_ptr<Move>> activeMoves_;
 
     bool isHighlighted(int row, int col) const;
     QString pieceTypeToString(PieceType type) const;
     QString colorToString(Color color) const;
+    void selectSourceSquare(int rank, int file);
+    void deselect();
+    void selectDestinationSquare(int rank, int file);
+
+
 };

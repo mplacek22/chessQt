@@ -33,6 +33,9 @@ public:
 
     [[nodiscard]] bool isPathClear(Coordinate source, Coordinate destination) const;
 
+    std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board() const { return board_; };
+
+
 private:
     std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board_;
     void clear();

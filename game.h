@@ -21,9 +21,11 @@ public:
     [[nodiscard]] Board& board() { return board_; }
     [[nodiscard]] Color currentPlayer() const { return currentPlayer_; }
     [[nodiscard]] GameStatus status()   const { return status_; }
-    [[nodiscard]] std::vector<Move> movesHistory() const { return movesHistory_; }
+    [[nodiscard]] const std::vector<Move>& movesHistory() const { return movesHistory_; }
 
     void processMove(Move &currentMove);
+
+    void calculatePossibleMovesForPiece(Coordinate& source);
 
 private:
     Color currentPlayer_ = Color::WHITE;

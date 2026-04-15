@@ -1,13 +1,14 @@
-#ifndef MOVE_H
-#define MOVE_H
-#include "coordinate.h"
+#pragma once
 
-#include <memory>
-#include <optional>
-#include "Piece.h"
+#include "coordinate.h"
 #include "Color.h"
 #include "MoveType.h"
 #include "gameStatus.h"
+#include "PieceType.h"
+#include <memory>
+#include <optional>
+
+class Piece;
 
 struct Move {
     Coordinate source;
@@ -26,6 +27,3 @@ struct Move {
 
     static const std::string toChessNotation(const Move& move);
 };
-
-
-#endif //MOVE_H

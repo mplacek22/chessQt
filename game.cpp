@@ -1,4 +1,6 @@
 #include "game.h"
+#include "pawn.h"
+#include <algorithm>
 
 Game::Game() {}
 
@@ -40,6 +42,15 @@ void Game::restart() {
 
 void Game::executeMove(const Move& move) {
     board_.movePiece(move.source, move.destination);
+    if (!move.movingPiece->hasMoved()) {
+        move.movingPiece->setHasMoved(true);
+    }
+    // remove the captured piece from the board
+    if(move.moveType == MoveType::ENPASSANT){
+        auto movingPiece = std::dynamic_pointer_cast<Pawn>(move.movingPiece);
+        int rank = move.destination.rank() - movingPiece->getNormalMoveDirections().front();
+        board_.setPieceAt({rank, move.destination.file()}, nullptr);
+    }
 }
 
 void Game::switchPlayer() {
@@ -53,12 +64,22 @@ void Game::updateGameStatus() {
 }
 
 void Game::processMove(Move& move) {
-    move.movingPiece = board_.getPieceAt(move.source);
-    move.capturedPiece = board_.getPieceAt(move.destination);
+    // move.movingPiece = board_.getPieceAt(move.source);
+    // move.capturedPiece = board_.getPieceAt(move.destination);
     // todo: update move.moveType and move.promotionPieceType
-    movesHistory_.push_back(move);
+
+    // auto possibleMoves = board_.getPieceAt(move.source)->calculatePossibleMoves(board_.board(), move.source);
+    // std::ranges::any_of(possibleMoves, [&move.destination](const std::shared_ptr<Move>& m) {
+    //     return m->destination == move.destination;
+    // }
     executeMove(move);
+    movesHistory_.push_back(move);
     updateGameStatus();
     move.gameStatus = status_;
     switchPlayer();
+}
+
+void Game::calculatePossibleMovesForPiece(Coordinate &source)
+{
+
 }
