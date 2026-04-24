@@ -1,6 +1,7 @@
 #include "game.h"
 #include "pawn.h"
-#include <algorithm>
+
+#include <qDebug>
 
 Game::Game() {}
 
@@ -51,6 +52,10 @@ void Game::executeMove(const Move& move) {
         int rank = move.destination.rank() - movingPiece->getNormalMoveDirections().front();
         board_.setPieceAt({rank, move.destination.file()}, nullptr);
     }
+    else if(move.moveType == MoveType::PROMOTION) {
+        pendingPromotion_ = true;
+        promotionSquare_ = move.destination;
+    }
 }
 
 void Game::switchPlayer() {
@@ -74,6 +79,9 @@ void Game::processMove(Move& move) {
     // }
     executeMove(move);
     movesHistory_.push_back(move);
+    if (pendingPromotion_) {
+        return;
+    }
     updateGameStatus();
     move.gameStatus = status_;
     switchPlayer();
@@ -82,4 +90,18 @@ void Game::processMove(Move& move) {
 void Game::calculatePossibleMovesForPiece(Coordinate &source)
 {
 
+}
+
+void Game::promotePawn(PieceType type)
+{
+    if (!promotionSquare_ || !pendingPromotion_) {
+        return;
+    }
+    board_.setPieceAt(promotionSquare_.value(), Piece::create(currentPlayer_, type));
+    pendingPromotion_ = false;
+    promotionSquare_ = std::nullopt;
+    Move& lastMove = movesHistory_.back();
+    lastMove.promotionPieceType = type;
+    updateGameStatus();
+    switchPlayer();
 }

@@ -80,6 +80,12 @@ ApplicationWindow {
             resultText.text = winner + " wins!"
             resultOverlay.visible = true
         }
+
+        function onPendingPromotionChanged() {
+            if (gameController.pendingPromotion === true) {
+                promotionDialog.open()
+            }
+        }
     }
 
     menuBar: MenuBar {
@@ -142,33 +148,37 @@ ApplicationWindow {
 
 
     // Game-over overlay
-        Rectangle {
-            id: resultOverlay
-            anchors.fill: parent
-            color: "#aa000000"
-            visible: false
-            radius: 4
+    Rectangle {
+        id: resultOverlay
+        anchors.fill: parent
+        color: "#aa000000"
+        visible: false
+        radius: 4
 
-            Column {
-                anchors.centerIn: parent
-                spacing: 20
+        Column {
+            anchors.centerIn: parent
+            spacing: 20
 
-                Text {
-                    id: resultText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "white"
-                    font.pixelSize: 36
-                    font.bold: true
-                }
+            Text {
+                id: resultText
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "white"
+                font.pixelSize: 36
+                font.bold: true
+            }
 
-                Button {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: "Play Again"
-                    onClicked: {
-                        resultOverlay.visible = false
-                        gameController.restartGame()
-                    }
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Play Again"
+                onClicked: {
+                    resultOverlay.visible = false
+                    gameController.restartGame()
                 }
             }
         }
+    }
+
+    PromotionDialog {
+        id: promotionDialog
+    }
 }

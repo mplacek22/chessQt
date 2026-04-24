@@ -46,6 +46,11 @@ qt_add_qml_module(appchess
         RESOURCES qml/pieces/w_bishop.svg qml/pieces/w_king.svg qml/pieces/w_knight.svg qml/pieces/w_pawn.svg qml/pieces/w_queen.svg qml/pieces/w_rook.svg
 RESOURCES qml/pieces/w_bishop.svg qml/pieces/w_king.svg qml/pieces/w_knight.svg qml/pieces/w_pawn.svg qml/pieces/w_queen.svg qml/pieces/w_rook.svg
 RESOURCES qml/pieces/b_bishop.svg qml/pieces/b_king.svg qml/pieces/b_knight.svg qml/pieces/b_pawn.svg qml/pieces/b_queen.svg qml/pieces/b_rook.svg qml/pieces/w_bishop.svg qml/pieces/w_king.svg qml/pieces/w_knight.svg qml/pieces/w_pawn.svg qml/pieces/w_queen.svg qml/pieces/w_rook.svg
+QML_FILES qml/PromotionDialog.qml
+QML_FILES qml/PieceButton.qml
+SOURCES
+SOURCES chessEnums.h
+SOURCES pieceUtils.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

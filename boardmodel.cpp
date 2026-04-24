@@ -1,5 +1,7 @@
 #include "boardmodel.h"
 
+#include "pieceUtils.h"
+
 BoardModel::BoardModel(std::shared_ptr<Game> game, QObject* parent)
     : QAbstractListModel(parent), game_(std::move(game)) {}
 
@@ -27,9 +29,7 @@ QVariant BoardModel::data(const QModelIndex& index, int role) const {
         return isHighlighted(rank, file);
     case SvgPathRole: {
             if (!piece) return QString("");
-            return QString("pieces/%1_%2.svg")
-                .arg(colorToString(piece->color()))
-                .arg(pieceTypeToString(piece->type()));
+            return PieceUtils::imageSource(piece->color(), piece->type());
         }
     default:
         return {};
@@ -45,6 +45,9 @@ QHash<int, QByteArray> BoardModel::roleNames() const {
 }
 
 void BoardModel::selectSquare(int gridRow, int gridCol) {
+    // cant move if there is a pending promotion
+    if (game_->pendingPromotion()) return;
+
     const int rank = Board::BOARD_SIZE - 1 - gridRow;
     const int file = gridCol;
     if (selectedRow_ == -1) {

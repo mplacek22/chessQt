@@ -49,8 +49,8 @@ Item {
             // Checkerboard coloring
             readonly property bool isLight: (index % 8 + Math.floor(index / 8)) % 2 === 0
             color: {
-                if (model.isHighlighted) return "#9EBC9F"   // legal-move hint
-                if (model.isSelected)   return "#9EBC9F"    // selected square
+                if (model.isHighlighted) return "#9EBC9F" // legal-move hint
+                if (model.isSelected)   return "#9EBC9F" // selected square
                 return isLight ? "#828F7B" : "#656256"
             }
 

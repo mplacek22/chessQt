@@ -24,8 +24,18 @@ void GameController::restartGame() {
     boardModel_->refreshAll();
 }
 
-QString GameController::currentPlayer() const {
-    return game_->currentPlayer() == Color::WHITE ? "white" : "black";
+void GameController::promotePawn(Chess::Enums::PieceType pieceType)
+{
+    game_->promotePawn(static_cast<PieceType>(pieceType));
+    emit pendingPromotionChanged();
+    emit movesChanged();
+    emit currentPlayerChanged();
+
+    boardModel_->refreshAll();
+}
+
+Chess::Enums::Color GameController::currentPlayer() const {
+    return game_->currentPlayer() == Color::WHITE ? Chess::Enums::Color::WHITE : Chess::Enums::Color::BLACK;
 }
 
 QString GameController::status() const {
@@ -40,8 +50,13 @@ QString GameController::status() const {
 }
 
 void GameController::onMoveExecuted() {
-    emit currentPlayerChanged();
-    emit movesChanged();
+    if (game_->pendingPromotion()){
+        emit pendingPromotionChanged();
+    }
+    else {
+        emit currentPlayerChanged();
+        emit movesChanged();
+    }
 
     GameStatus s = game_->status();
     if (s == GameStatus::WHITE_WIN) {
