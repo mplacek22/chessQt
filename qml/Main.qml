@@ -123,7 +123,7 @@ ApplicationWindow {
                 height: width  // always square
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 model: gameController.board
-                enabled: gameController.status === "in_progress"
+                enabled: gameController.isGameOngoing
             }
 
         }

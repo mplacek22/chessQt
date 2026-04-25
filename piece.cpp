@@ -1,11 +1,10 @@
-#include "piece.h"
-
-#include <Bishop.h>
-#include <King.h>
-#include <Knight.h>
-#include <Pawn.h>
-#include <Queen.h>
-#include <Rook.h>
+#include "Bishop.h"
+#include "King.h"
+#include "Pawn.h"
+#include "Queen.h"
+#include "Rook.h"
+#include "Knight.h"
+#include "Move.h"
 
 #include <stdexcept>
 
@@ -116,18 +115,13 @@ const bool Piece::isEnemy(const std::array<std::array<std::shared_ptr<Piece>, 8>
 std::vector<std::shared_ptr<Move> > Piece::calculatePossibleMoves(
     const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board,
     const Coordinate &source,
+    GameStatus gameStatus,
     std::optional<Move> lastMove
 ) {
     std::vector<std::shared_ptr<Move> > moves;
-    // auto checkers = computeCheckers(board);
-    // implement this
-    bool isCheck = false;
 
-    // if double check only king can move
-    // if (checkers.size() > 1 && type_ != PieceType::KING) {
-    //     return moves;
-    // }
-    if (isCheck && type_ != PieceType::KING) {
+    // in double check only the king can move
+    if (gameStatus == GameStatus::DOUBLE_CHECK && type_ != PieceType::KING) {
         return moves;
     }
 

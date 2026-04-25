@@ -3,7 +3,8 @@
 enum class GameStatus {
     NEW,
     IN_PROGRESS,
-    CHECK,
+    SINGLE_CHECK,
+    DOUBLE_CHECK,
     CHECK_MATE,
     STALE_MATE,
     DRAW,

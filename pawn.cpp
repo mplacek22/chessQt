@@ -3,6 +3,7 @@
 std::vector<std::shared_ptr<Move> > Pawn::calculatePossibleMoves(
     const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board,
     const Coordinate &source,
+    GameStatus gameStatus,
     std::optional<Move> lastMove)
 {
     std::vector<std::shared_ptr<Move>> moves;

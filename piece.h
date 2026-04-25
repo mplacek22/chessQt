@@ -3,12 +3,15 @@
 #include "Color.h"
 #include "Move.h"
 #include "PieceType.h"
+#include "gameStatus.h"
 #include <array>
 #include <memory>
+#include <optional>
 #include <span>
 #include <vector>
 
 struct Move;
+struct Coordinate;
 
 class Piece
 {
@@ -27,6 +30,7 @@ public:
     virtual std::vector<std::shared_ptr<Move>> calculatePossibleMoves(
         const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board,
         const Coordinate& source,
+        GameStatus gameStatus,
         std::optional<Move> lastMove = std::nullopt
     );
 

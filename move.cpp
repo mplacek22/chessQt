@@ -1,4 +1,3 @@
-#include "move.h"
 #include "piece.h"
 
 const std::string Move::toChessNotation(const Move& move) {
@@ -36,7 +35,8 @@ const std::string Move::toChessNotation(const Move& move) {
     }
 
     switch (move.gameStatus) {
-        case GameStatus::CHECK: notation += '+'; break;
+        case GameStatus::SINGLE_CHECK: notation += '+'; break;
+        case GameStatus::DOUBLE_CHECK: notation += '+'; break;
         case GameStatus::CHECK_MATE: notation += '#'; break;
         default: break;
     }

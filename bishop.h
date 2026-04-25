@@ -1,7 +1,6 @@
-#ifndef BISHOP_H
-#define BISHOP_H
+#pragma once
 
-#include <Piece.h>
+#include "Piece.h"
 
 
 class Bishop final : public Piece {
@@ -22,5 +21,3 @@ private:
         { 1,  1}, { 1, -1}, {-1,  1}, {-1, -1}
     }};
 };
-
-#endif // BISHOP_H

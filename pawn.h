@@ -1,8 +1,7 @@
-#ifndef PAWN_H
-#define PAWN_H
+#pragma once
 
-#include <Piece.h>
 #include "Move.h"
+#include "Piece.h"
 
 
 class Pawn final : public Piece {
@@ -15,6 +14,7 @@ public:
     std::vector<std::shared_ptr<Move>> calculatePossibleMoves(
         const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board,
         const Coordinate& source,
+        GameStatus gameStatus,
         std::optional<Move> lastMove
     ) override;
 
@@ -39,5 +39,3 @@ private:
 
 
 };
-
-#endif // PAWN_H

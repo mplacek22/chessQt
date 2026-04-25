@@ -101,6 +101,7 @@ void BoardModel::selectSourceSquare(int rank, int file)
     activeMoves_ = piece->calculatePossibleMoves(
         game_->board().board(),
         {rank, file},
+        game_->status(),
         game_->movesHistory().empty() ? std::nullopt : std::optional(game_->movesHistory().back())
     );
     highlightedSquares_.clear();

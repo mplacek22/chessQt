@@ -1,7 +1,5 @@
-#ifndef KING_H
-#define KING_H
-
-#include <Piece.h>
+#pragma once
+#include "Piece.h"
 
 
 class King final : public Piece {
@@ -15,6 +13,7 @@ public:
     std::vector<std::shared_ptr<Move>> calculatePossibleMoves(
         const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board,
         const Coordinate& source,
+        GameStatus gameStatus,
         std::optional<Move> lastMove
     ) override;
 
@@ -35,5 +34,3 @@ private:
 
 
 };
-
-#endif // KING_H

@@ -12,6 +12,7 @@ GameController::GameController(QObject* parent)
 void GameController::startGame() {
     game_->start();
     emit statusChanged();
+    emit isGameOngoingChanged();
     emit currentPlayerChanged();
     boardModel_->refreshAll();
 }
@@ -45,6 +46,8 @@ QString GameController::status() const {
         case GameStatus::DRAW:        return "draw";
         case GameStatus::WHITE_WIN:   return "white_win";
         case GameStatus::BLACK_WIN:   return "black_win";
+        case GameStatus::SINGLE_CHECK: return "single_check";
+        case GameStatus::DOUBLE_CHECK: return "single_check";
         default:                      return "unknown";
     }
 }
@@ -56,6 +59,7 @@ void GameController::onMoveExecuted() {
     else {
         emit currentPlayerChanged();
         emit movesChanged();
+        emit isGameOngoingChanged();
     }
 
     GameStatus s = game_->status();
@@ -82,4 +86,9 @@ QStringList GameController::movesList() const {
         result.append(entry);
     }
     return result;
+}
+
+bool GameController::isGameOngoing() const
+{
+    return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(game_->status()));
 }

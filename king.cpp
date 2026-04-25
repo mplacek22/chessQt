@@ -4,9 +4,10 @@
 std::vector<std::shared_ptr<Move> > King::calculatePossibleMoves(
     const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board,
     const Coordinate& source,
+    GameStatus gameStatus,
     std::optional<Move> lastMove)
 {
-    auto moves = Piece::calculatePossibleMoves(board, source, lastMove);;
+    auto moves = Piece::calculatePossibleMoves(board, source, gameStatus, lastMove);;
     auto dangerSquares = computeKingDangerSquares(board, source);
 
     // Filter out moves to king danger squares
