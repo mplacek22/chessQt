@@ -1,17 +1,10 @@
 #pragma once
 
 #include "Color.h"
-#include "Move.h"
 #include "PieceType.h"
-#include "gameStatus.h"
 #include <array>
 #include <memory>
-#include <optional>
 #include <span>
-#include <vector>
-
-struct Move;
-struct Coordinate;
 
 class Piece
 {
@@ -27,39 +20,22 @@ public:
 
     static std::shared_ptr<Piece> create(Color color, PieceType pieceType);
 
-    virtual std::vector<std::shared_ptr<Move>> calculatePossibleMoves(
-        const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board,
-        const Coordinate& source,
-        GameStatus gameStatus,
-        std::optional<Move> lastMove = std::nullopt
-    );
-
-    std::vector<std::shared_ptr<Move>> calculatePseudoLegalMoves(
-        const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board,
-        const Coordinate& source
-        );
-
-    std::vector<Coordinate> computeCheckers(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board) const;
-
     // For non-sliding pieces (king, knight, pawn) these are single offsets.
     virtual std::span<const std::array<int, 2>> getMoveDirections() const = 0;
 
     // Sliding pieces follow a direction until blocked; non-sliding jump exactly once.
     virtual bool isSliding() const = 0;
 
+    // When a piece is pinned, it can only move towards or away from the pinner, it can’t leave the line between the attacking piece and the king.
+    // virtual bool isPinned(std::array<std::array<std::shared_ptr<Piece>, 8>, 8> board) const = 0;
+
+    virtual const std::span<const std::array<int, 2>> getCaptureMoveDirections() const {
+        return getMoveDirections();
+    }
+
 protected:
     PieceType type_;
     Color color_;
     bool hasMoved_ = false;
     char name_;
-
-    static const bool inBounds(int rank, int file) {
-        return rank >= 0 && rank < 8 && file >= 0 && file < 8;
-    }
-
-    const bool isFriendly(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board, Coordinate& coord);
-    const bool isEnemy(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board, Coordinate& coord);
-
-private:
-    Coordinate findKing(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8>& board) const;
 };

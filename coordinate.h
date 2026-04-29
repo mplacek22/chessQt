@@ -4,10 +4,6 @@
 // template<size_t boardSize = 8>
 struct Coordinate {
     Coordinate(const int rank, const int file) {
-        if (!validate(file, rank)) {
-            throw std::invalid_argument(
-                "Invalid coordinates. File and rank must be between 0 and 7");
-        }
         this->file_ = file;
         this->rank_ = rank;
     }

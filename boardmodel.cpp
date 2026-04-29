@@ -1,5 +1,7 @@
 #include "boardmodel.h"
 
+#include "game_state.h"
+#include "move_generator.h"
 #include "pieceUtils.h"
 
 BoardModel::BoardModel(std::shared_ptr<Game> game, QObject* parent)
@@ -97,13 +99,13 @@ void BoardModel::selectSourceSquare(int rank, int file)
     selectedRow_ = rank;
     selectedCol_ = file;
 
-
-    activeMoves_ = piece->calculatePossibleMoves(
-        game_->board().board(),
-        {rank, file},
+    GameState state = {
+        game_->currentPlayer(),
         game_->status(),
         game_->movesHistory().empty() ? std::nullopt : std::optional(game_->movesHistory().back())
-    );
+    };
+    activeMoves_ = MoveGenerator::calculatePossibleMoves(game_->board(), {rank, file}, state);
+
     highlightedSquares_.clear();
     for (const auto& move : activeMoves_)
         highlightedSquares_.append({move->destination.rank(), move->destination.file()});

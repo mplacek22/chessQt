@@ -1,4 +1,5 @@
-#include "piece.h"
+#include "move.h"
+
 
 const std::string Move::toChessNotation(const Move& move) {
     if (move.moveType == MoveType::CASTLE_KINGSIDE)  return "O-O";

@@ -7,6 +7,7 @@
 #include "Coordinate.h"
 #include <memory>
 #include <array>
+#include <vector>
 #include "Piece.h"
 
 
@@ -35,6 +36,15 @@ public:
 
     std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board() const { return board_; };
 
+    std::vector<Coordinate> computeCheckers(Color color) const;
+
+    Coordinate findKing(Color color) const;
+
+    const bool isFriendly(Coordinate& coord, Color color) const;
+
+    const bool isEnemy(Coordinate& coord, Color color) const;
+
+    const bool inBounds(Coordinate& coord) const;
 
 private:
     std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board_;

@@ -1,14 +1,12 @@
 #pragma once
 
-#include "coordinate.h"
-#include "Color.h"
-#include "MoveType.h"
 #include "gameStatus.h"
+#include "Piece.h"
+#include "coordinate.h"
+#include "MoveType.h"
 #include "PieceType.h"
 #include <memory>
 #include <optional>
-
-class Piece;
 
 struct Move {
     Coordinate source;
