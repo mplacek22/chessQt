@@ -1,4 +1,5 @@
 #include "game.h"
+#include "move_generator.h"
 #include "pawn.h"
 
 #include <qDebug>
@@ -65,6 +66,29 @@ void Game::switchPlayer() {
 void Game::updateGameStatus() {
     if (movesHistory_.size() == 50) {
         status_ = GameStatus::DRAW;
+        return;
+    }
+    // todo: repetition
+    // todo: stale mate
+    // todo: insuficcient material
+
+    int numCheckers = MoveGenerator::computeCheckers(board_, gameState()).size();
+    if (numCheckers == 0) {
+        status_ = GameStatus::IN_PROGRESS;
+        return;
+    }
+    if (numCheckers == 1) {
+        status_ = GameStatus::SINGLE_CHECK;
+    }
+    else if (numCheckers == 2) {
+        status_ = GameStatus::DOUBLE_CHECK;
+    }
+    Color enemyColor = currentPlayer_ == Color::WHITE ? Color::BLACK : Color::WHITE;
+    auto kingMoves = MoveGenerator::calculatePossibleMoves(board(), board().findKing(enemyColor), gameState());
+    if (numCheckers > 0 && kingMoves.size() == 0) {
+        //todo: consider winner in game
+        status_ = GameStatus::CHECK_MATE;
+        status_ = currentPlayer_ == Color::WHITE ? GameStatus::WHITE_WIN : GameStatus::BLACK_WIN;
     }
 }
 
@@ -83,7 +107,6 @@ void Game::processMove(Move& move) {
         return;
     }
     updateGameStatus();
-    move.gameStatus = status_;
     switchPlayer();
 }
 
@@ -104,4 +127,9 @@ void Game::promotePawn(PieceType type)
     lastMove.promotionPieceType = type;
     updateGameStatus();
     switchPlayer();
+}
+
+const GameState Game::gameState() const
+{
+    return {currentPlayer_, status_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())};
 }

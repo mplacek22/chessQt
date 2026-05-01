@@ -1,4 +1,5 @@
 #include "gamecontroller.h"
+#include "pieceUtils.h"
 
 GameController::GameController(QObject* parent)
     : QObject(parent),
@@ -22,6 +23,7 @@ void GameController::restartGame() {
     emit statusChanged();
     emit currentPlayerChanged();
     emit movesChanged();
+    emit isGameOngoingChanged();
     boardModel_->refreshAll();
 }
 
@@ -40,16 +42,7 @@ Chess::Enums::Color GameController::currentPlayer() const {
 }
 
 QString GameController::status() const {
-    switch (game_->status()) {
-        case GameStatus::NEW:         return "new";
-        case GameStatus::IN_PROGRESS: return "in_progress";
-        case GameStatus::DRAW:        return "draw";
-        case GameStatus::WHITE_WIN:   return "white_win";
-        case GameStatus::BLACK_WIN:   return "black_win";
-        case GameStatus::SINGLE_CHECK: return "single_check";
-        case GameStatus::DOUBLE_CHECK: return "single_check";
-        default:                      return "unknown";
-    }
+    return PieceUtils::gameStatusToString(game_->status());
 }
 
 void GameController::onMoveExecuted() {
@@ -60,17 +53,15 @@ void GameController::onMoveExecuted() {
         emit currentPlayerChanged();
         emit movesChanged();
         emit isGameOngoingChanged();
+        emit statusChanged();
     }
 
     GameStatus s = game_->status();
     if (s == GameStatus::WHITE_WIN) {
-        emit statusChanged();
         emit gameOver("White");
     } else if (s == GameStatus::BLACK_WIN) {
-        emit statusChanged();
         emit gameOver("Black");
     } else if (s == GameStatus::DRAW) {
-        emit statusChanged();
         emit gameOver("Nobody — it's a draw");
     }
 }

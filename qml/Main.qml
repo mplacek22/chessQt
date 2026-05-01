@@ -135,6 +135,12 @@ ApplicationWindow {
 
             spacing: 8
 
+            Text {
+                text: gameController.status
+                color: palette.brightText
+                font.pixelSize: 14
+            }
+
 
             MoveList {
                 Layout.fillWidth: true

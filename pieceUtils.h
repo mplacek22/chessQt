@@ -3,6 +3,7 @@
 #include <QtQml/qqml.h>
 #include "Color.h"
 #include "PieceType.h"
+#include "gameStatus.h"
 
 class PieceUtils : public QObject
 {
@@ -18,6 +19,18 @@ public:
 
     static QString imageSource(Color color, PieceType type) {
         return QString("pieces/%1_%2.svg").arg(colorToString(color), pieceTypeToString(type));
+    }
+
+    static QString gameStatusToString(GameStatus gameStatus) {
+        switch (gameStatus) {
+        case GameStatus::IN_PROGRESS: return "in_progress";
+        case GameStatus::SINGLE_CHECK: return "check";
+        case GameStatus::DOUBLE_CHECK: return "double_check";
+        case GameStatus::STALE_MATE: return "stale_mate";
+        case GameStatus::WHITE_WIN: return "white_win";
+        case GameStatus::BLACK_WIN: return "black_win";
+        default: return "";
+        }
     }
 
 

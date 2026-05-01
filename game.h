@@ -4,6 +4,7 @@
 #include "gameStatus.h"
 #include "Board.h"
 #include "Move.h"
+#include "game_state.h"
 
 #include <vector>
 // #include <unordered_set>
@@ -35,6 +36,8 @@ public:
     std::optional<Coordinate> promotionSquare() const { return promotionSquare_; }
 
     void promotePawn(PieceType type);
+
+    const GameState gameState() const;
 
 private:
     Color currentPlayer_ = Color::WHITE;

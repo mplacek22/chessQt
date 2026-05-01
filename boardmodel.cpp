@@ -1,6 +1,4 @@
 #include "boardmodel.h"
-
-#include "game_state.h"
 #include "move_generator.h"
 #include "pieceUtils.h"
 
@@ -73,22 +71,6 @@ bool BoardModel::isHighlighted(int row, int col) const {
     return highlightedSquares_.contains({row, col});
 }
 
-QString BoardModel::pieceTypeToString(PieceType type) const {
-    switch (type) {
-    case PieceType::KING:   return "king";
-    case PieceType::QUEEN:  return "queen";
-    case PieceType::ROOK:   return "rook";
-    case PieceType::BISHOP: return "bishop";
-    case PieceType::KNIGHT: return "knight";
-    case PieceType::PAWN:   return "pawn";
-    default:                return "";
-    }
-}
-
-QString BoardModel::colorToString(Color color) const {
-    return color == Color::WHITE ? "w" : "b";
-}
-
 void BoardModel::selectSourceSquare(int rank, int file)
 {
     Coordinate coord(rank, file);
@@ -99,12 +81,7 @@ void BoardModel::selectSourceSquare(int rank, int file)
     selectedRow_ = rank;
     selectedCol_ = file;
 
-    GameState state = {
-        game_->currentPlayer(),
-        game_->status(),
-        game_->movesHistory().empty() ? std::nullopt : std::optional(game_->movesHistory().back())
-    };
-    activeMoves_ = MoveGenerator::calculatePossibleMoves(game_->board(), {rank, file}, state);
+    activeMoves_ = MoveGenerator::calculatePossibleMoves(game_->board(), {rank, file}, game_->gameState());
 
     highlightedSquares_.clear();
     for (const auto& move : activeMoves_)
