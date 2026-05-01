@@ -6,6 +6,7 @@
 #include "Move.h"
 #include "game_state.h"
 
+#include <DrawCause.h>
 #include <vector>
 // #include <unordered_set>
 
@@ -29,8 +30,6 @@ public:
 
     void processMove(Move &currentMove);
 
-    void calculatePossibleMovesForPiece(Coordinate& source);
-
     bool pendingPromotion() const { return pendingPromotion_; }
 
     std::optional<Coordinate> promotionSquare() const { return promotionSquare_; }
@@ -39,6 +38,10 @@ public:
 
     const GameState gameState() const;
 
+    const std::optional<DrawCause> drawCause() const { return drawCause_; }
+
+    const std::optional<Color> winner() { return winner_; }
+
 private:
     Color currentPlayer_ = Color::WHITE;
     Board board_ = Board();
@@ -46,12 +49,27 @@ private:
     GameStatus status_ = GameStatus::NEW;
     bool pendingPromotion_ = false;
     std::optional<Coordinate> promotionSquare_;
+    std::optional<Color> winner_;
+    std::optional<DrawCause> drawCause_;
 
     void switchPlayer();
 
     void executeMove(const Move &move);
 
     void updateGameStatus();
+
+    void updateWinner();
+
+    bool isFiftyMoveRule() const;
+
+    bool isRepetition() const;
+
+    bool isInsufficientMaterial() const;
+
+    Color oppositeColor(Color color) const;
+
+    void setDraw(DrawCause drawCause);
+
 };
 
 #endif // GAME_H

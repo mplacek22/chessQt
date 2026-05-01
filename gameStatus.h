@@ -6,8 +6,5 @@ enum class GameStatus {
     SINGLE_CHECK,
     DOUBLE_CHECK,
     CHECK_MATE,
-    STALE_MATE,
     DRAW,
-    WHITE_WIN,
-    BLACK_WIN
 };

@@ -13,7 +13,7 @@ Popup {
 
     background: Rectangle {
         color: palette.base
-        radius: 10
+        radius: 12
     }
 
     Column {

@@ -76,14 +76,15 @@ ApplicationWindow {
 
     Connections {
         target: gameController
-        function onGameOver(winner) {
-            resultText.text = winner + " wins!"
-            resultOverlay.visible = true
-        }
-
         function onPendingPromotionChanged() {
             if (gameController.pendingPromotion === true) {
                 promotionDialog.open()
+            }
+        }
+
+        function onIsGameOngoingChanged() {
+            if (!gameController.isGameOngoing){
+                gameOverDialog.open()
             }
         }
     }
@@ -151,40 +152,14 @@ ApplicationWindow {
 
     }
 
-
-
-    // Game-over overlay
-    Rectangle {
-        id: resultOverlay
-        anchors.fill: parent
-        color: "#aa000000"
-        visible: false
-        radius: 4
-
-        Column {
-            anchors.centerIn: parent
-            spacing: 20
-
-            Text {
-                id: resultText
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: "white"
-                font.pixelSize: 36
-                font.bold: true
-            }
-
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "Play Again"
-                onClicked: {
-                    resultOverlay.visible = false
-                    gameController.restartGame()
-                }
-            }
-        }
-    }
-
     PromotionDialog {
         id: promotionDialog
+    }
+
+    GameOverDialog {
+        id: gameOverDialog
+        winner: gameController.winner
+        drawCause: gameController.drawCause
+        onRestartRequested: gameController.restartGame()
     }
 }

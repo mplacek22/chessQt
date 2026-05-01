@@ -13,7 +13,6 @@ GameController::GameController(QObject* parent)
 void GameController::startGame() {
     game_->start();
     emit statusChanged();
-    emit isGameOngoingChanged();
     emit currentPlayerChanged();
     boardModel_->refreshAll();
 }
@@ -23,7 +22,6 @@ void GameController::restartGame() {
     emit statusChanged();
     emit currentPlayerChanged();
     emit movesChanged();
-    emit isGameOngoingChanged();
     boardModel_->refreshAll();
 }
 
@@ -52,17 +50,7 @@ void GameController::onMoveExecuted() {
     else {
         emit currentPlayerChanged();
         emit movesChanged();
-        emit isGameOngoingChanged();
         emit statusChanged();
-    }
-
-    GameStatus s = game_->status();
-    if (s == GameStatus::WHITE_WIN) {
-        emit gameOver("White");
-    } else if (s == GameStatus::BLACK_WIN) {
-        emit gameOver("Black");
-    } else if (s == GameStatus::DRAW) {
-        emit gameOver("Nobody — it's a draw");
     }
 }
 
@@ -82,4 +70,22 @@ QStringList GameController::movesList() const {
 bool GameController::isGameOngoing() const
 {
     return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(game_->status()));
+}
+
+int GameController::winner() const
+{
+    auto winnerOpt = game_->winner();
+    if (winnerOpt.has_value()) {
+        return static_cast<int>(winnerOpt.value());
+    }
+    return -1;
+}
+
+QString GameController::drawCause() const
+{
+    auto drawCauseOpt = game_->drawCause();
+    if (drawCauseOpt.has_value()) {
+        return PieceUtils::drawCauseToString(drawCauseOpt.value());
+    }
+    return "";
 }

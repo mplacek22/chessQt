@@ -13,7 +13,9 @@ class GameController : public QObject {
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QStringList movesList READ movesList NOTIFY movesChanged)
     Q_PROPERTY(bool pendingPromotion READ pendingPromotion NOTIFY pendingPromotionChanged)
-    Q_PROPERTY(bool isGameOngoing READ isGameOngoing NOTIFY isGameOngoingChanged)
+    Q_PROPERTY(bool isGameOngoing READ isGameOngoing NOTIFY statusChanged)
+    Q_PROPERTY(int winner READ winner NOTIFY statusChanged)
+    Q_PROPERTY(QString drawCause READ drawCause  NOTIFY statusChanged)
 
 public:
     explicit GameController(QObject* parent = nullptr);
@@ -24,6 +26,8 @@ public:
     QStringList movesList() const;
     bool pendingPromotion() const { return game_->pendingPromotion(); }
     bool isGameOngoing() const;
+    int winner() const;
+    QString drawCause() const;
 
     Q_INVOKABLE void startGame();
     Q_INVOKABLE void restartGame();
@@ -32,10 +36,9 @@ public:
 signals:
     void currentPlayerChanged();
     void statusChanged();
-    void gameOver(QString winner);
+    // void gameOver(QString winner);
     void movesChanged();
     void pendingPromotionChanged();
-    void isGameOngoingChanged();
 
 private:
     std::shared_ptr<Game> game_;

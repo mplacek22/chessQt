@@ -26,6 +26,29 @@ namespace Chess {
             BLACK = 1
         };
         Q_ENUM(Color)
+
+        enum class GameStatus {
+            NEW,
+            IN_PROGRESS,
+            SINGLE_CHECK,
+            DOUBLE_CHECK,
+            CHECK_MATE,
+            STALE_MATE,
+            DRAW,
+        };
+        Q_ENUM(GameStatus)
+
+        enum DrawCause {
+            STALEMATE,
+            INSUFFICIENT_MATERIAL,
+            FIFTY_MOVE_RULE,
+            THREEFOLD_REPETITION,
+            FIVEFOLD_REPETITION,
+            AGREED
+        };
+        Q_ENUM(DrawCause)
+
+
     };
 
 }

@@ -3,6 +3,7 @@
 #include <QtQml/qqml.h>
 #include "Color.h"
 #include "PieceType.h"
+#include "drawCause.h"
 #include "gameStatus.h"
 
 class PieceUtils : public QObject
@@ -26,10 +27,21 @@ public:
         case GameStatus::IN_PROGRESS: return "in_progress";
         case GameStatus::SINGLE_CHECK: return "check";
         case GameStatus::DOUBLE_CHECK: return "double_check";
-        case GameStatus::STALE_MATE: return "stale_mate";
-        case GameStatus::WHITE_WIN: return "white_win";
-        case GameStatus::BLACK_WIN: return "black_win";
+        case GameStatus::DRAW: return "draw";
+        case GameStatus::NEW: return "new";
         default: return "";
+        }
+    }
+
+    Q_INVOKABLE static QString drawCauseToString(DrawCause drawCause)
+    {
+        switch (drawCause) {
+            case DrawCause::STALEMATE: return "Stalemate";
+            case DrawCause::AGREED: return "Agreed";
+            case DrawCause::FIFTY_MOVE_RULE: return "50 moves rule";
+            case DrawCause::THREEFOLD_REPETITION: return "threefold-repetition";
+            case DrawCause::INSUFFICIENT_MATERIAL: return "insufficient material";
+            default: return "";
         }
     }
 

@@ -89,6 +89,27 @@ public:
         return checkers;
     }
 
+    static bool canPlayerMove(const Board& board, const GameState& gameState, const Color color) {
+        std::vector<Coordinate> pieces_coords;
+
+        for (int r = 0; r < board.board().size(); ++r) {
+            for (int f = 0; f < board.board().size(); ++f) {
+                Coordinate coord {r, f};
+                auto piece = board.getPieceAt(coord);
+                if(piece && piece->color() == color) {
+                    pieces_coords.push_back(coord);
+                }
+            }
+        }
+        for (const Coordinate& source : pieces_coords) {
+            // any move possible
+            if (!calculatePossibleMoves(board, source, gameState).empty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 private:
     static std::vector<std::shared_ptr<Move>> calculatePawnMoves(const Board& board, const Coordinate& source, const GameState& state)
     {

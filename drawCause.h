@@ -1,0 +1,10 @@
+#pragma once
+
+enum DrawCause {
+    STALEMATE,
+    INSUFFICIENT_MATERIAL,
+    FIFTY_MOVE_RULE,
+    THREEFOLD_REPETITION,
+    FIVEFOLD_REPETITION,
+    AGREED
+};

@@ -53,6 +53,9 @@ SOURCES chessEnums.h
 SOURCES pieceUtils.h
 SOURCES move_generator.h move_generator.cpp
 SOURCES game_state.h
+QML_FILES qml/GameOverDialog.qml
+SOURCES drawCause.h
+QML_FILES
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

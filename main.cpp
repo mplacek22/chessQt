@@ -8,6 +8,8 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+
     // Register types so QML knows about them
     // Must register BEFORE engine is created
     qmlRegisterType<BoardModel>("Chess", 1, 0, "BoardModel");

@@ -64,43 +64,67 @@ void Game::switchPlayer() {
 }
 
 void Game::updateGameStatus() {
-    if (movesHistory_.size() == 50) {
-        status_ = GameStatus::DRAW;
+    if (isFiftyMoveRule()) {
+        setDraw(DrawCause::FIFTY_MOVE_RULE);
         return;
     }
     // todo: repetition
-    // todo: stale mate
     // todo: insuficcient material
+    Color enemyColor = oppositeColor(currentPlayer_);
+    GameState state = gameState();
+    bool canEnemyMove = MoveGenerator::canPlayerMove(board_, state, enemyColor);
+    int numCheckers = MoveGenerator::computeCheckers(board_, state).size();
 
-    int numCheckers = MoveGenerator::computeCheckers(board_, gameState()).size();
     if (numCheckers == 0) {
-        status_ = GameStatus::IN_PROGRESS;
+        if(canEnemyMove) {
+            status_ = GameStatus::IN_PROGRESS;
+        }
+        else {
+            setDraw(DrawCause::STALEMATE);
+        }
         return;
     }
-    if (numCheckers == 1) {
+    else if (numCheckers > 0 && !canEnemyMove) {
+        status_ = GameStatus::CHECK_MATE;
+        updateWinner();
+        return;
+    }
+    else if (numCheckers == 1) {
         status_ = GameStatus::SINGLE_CHECK;
     }
     else if (numCheckers == 2) {
         status_ = GameStatus::DOUBLE_CHECK;
     }
-    Color enemyColor = currentPlayer_ == Color::WHITE ? Color::BLACK : Color::WHITE;
-    auto kingMoves = MoveGenerator::calculatePossibleMoves(board(), board().findKing(enemyColor), gameState());
-    if (numCheckers > 0 && kingMoves.size() == 0) {
-        //todo: consider winner in game
-        status_ = GameStatus::CHECK_MATE;
-        status_ = currentPlayer_ == Color::WHITE ? GameStatus::WHITE_WIN : GameStatus::BLACK_WIN;
+}
+
+void Game::updateWinner()
+{
+    if (status_ == GameStatus::CHECK_MATE){
+        winner_ = currentPlayer_;
     }
 }
 
-void Game::processMove(Move& move) {
-    // move.movingPiece = board_.getPieceAt(move.source);
-    // move.capturedPiece = board_.getPieceAt(move.destination);
-    // todo: update move.moveType and move.promotionPieceType
+bool Game::isFiftyMoveRule() const
+{
+    return movesHistory_.size() == 1;
+}
 
-    // auto possibleMoves = board_.getPieceAt(move.source)->calculatePossibleMoves(board_.board(), move.source);
-    // std::ranges::any_of(possibleMoves, [&move.destination](const std::shared_ptr<Move>& m) {
-    //     return m->destination == move.destination;
-    // }
+bool Game::isRepetition() const
+{
+    return false;
+}
+
+Color Game::oppositeColor(Color color) const
+{
+    return color == Color::WHITE ? Color::BLACK : Color::WHITE;
+}
+
+void Game::setDraw(DrawCause drawCause)
+{
+    status_ = GameStatus::DRAW;
+    drawCause_ = drawCause;
+}
+void Game::processMove(Move& move) {
     executeMove(move);
     movesHistory_.push_back(move);
     if (pendingPromotion_) {
@@ -108,11 +132,6 @@ void Game::processMove(Move& move) {
     }
     updateGameStatus();
     switchPlayer();
-}
-
-void Game::calculatePossibleMovesForPiece(Coordinate &source)
-{
-
 }
 
 void Game::promotePawn(PieceType type)
