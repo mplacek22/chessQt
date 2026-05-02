@@ -187,6 +187,19 @@ private:
             return std::ranges::find(dangerSquares, m->destination) != dangerSquares.end();
         });
 
+        if(canCastleKingSide(board, source, state)) {
+            auto move = std::make_shared<Move>(source, Coordinate{source.rank(), 6}, state.currentPlayer);
+            move->moveType = MoveType::CASTLE_KINGSIDE;
+            move->movingPiece = board.getPieceAt(source);
+            moves.push_back(move);
+        }
+        if(canCastleQueenSide(board, source, state)) {
+            auto move = std::make_shared<Move>(source, Coordinate{source.rank(), 2}, state.currentPlayer);
+            move->moveType = MoveType::CASTLE_QUEENSIDE;
+            move->movingPiece = board.getPieceAt(source);
+            moves.push_back(move);
+        }
+
         return moves;
     }
 
@@ -210,9 +223,40 @@ private:
         return danger;
     }
 
-    // static bool canCastleKingSide(const Board& board, const GameState& state) {
+    static bool canCastle(const Board& board, const Coordinate& kingPosition, const GameState& state, bool kingSide) {
+        // no check
+        if(state.gameStatus == GameStatus::SINGLE_CHECK || state.gameStatus == GameStatus::DOUBLE_CHECK){
+            return false;
+        }
+        // king hasnt moved
+        auto king = board.getPieceAt(kingPosition);
+        if(king->hasMoved()) {
+            return false;
+        }
+        // rook hasnt moved
+        int rookFileOffset = kingSide ? 3 : -4;
+        Coordinate rookStartPosition = {kingPosition.rank(), kingPosition.file() + rookFileOffset};
+        auto rook = board.getPieceAt(rookStartPosition);
+        if (!rook || rook->type() != PieceType::ROOK || rook->hasMoved()) {
+            return false;
+        }
+        // clear path
+        if (!board.isPathClear(kingPosition, rookStartPosition)){
+            return false;
+        }
 
-    // }
+        // path squares cant be attacked
+        Color attackerColor = state.currentPlayer == Color::WHITE ? Color::BLACK : Color::WHITE;
+        int direction = kingSide ? 1 : -1;
+        for (int step = 0; step <= 2; ++step) {
+            Coordinate square = {kingPosition.rank(), kingPosition.file() + direction * step};
+            if (isSquareAttackedBy(board, square, attackerColor, state)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     static bool isSquareAttackedBy(const Board& board, const Coordinate& target, Color attackerColor, const GameState& gameState)
     {
@@ -379,5 +423,13 @@ private:
         auto kingSquare = copy.findKing(movingPiece->color());
         Color enemy = (movingPiece->color() == Color::WHITE) ? Color::BLACK : Color::WHITE;
         return isSquareAttackedBy(copy, kingSquare, enemy, state);
+    }
+
+    static bool canCastleKingSide(const Board& board, const Coordinate& kingPosition, const GameState& state) {
+        return canCastle(board, kingPosition, state, /*kingSide=*/true);
+    }
+
+    static bool canCastleQueenSide(const Board& board, const Coordinate& kingPosition, const GameState& state) {
+        return canCastle(board, kingPosition, state, /*kingSide=*/false);
     }
 };

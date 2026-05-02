@@ -47,15 +47,38 @@ void Game::executeMove(const Move& move) {
     if (!move.movingPiece->hasMoved()) {
         move.movingPiece->setHasMoved(true);
     }
-    // remove the captured piece from the board
-    if(move.moveType == MoveType::ENPASSANT){
-        auto movingPiece = std::dynamic_pointer_cast<Pawn>(move.movingPiece);
-        int rank = move.destination.rank() - movingPiece->getNormalMoveDirections().front();
-        board_.setPieceAt({rank, move.destination.file()}, nullptr);
-    }
-    else if(move.moveType == MoveType::PROMOTION) {
-        pendingPromotion_ = true;
-        promotionSquare_ = move.destination;
+
+    switch (move.moveType) {
+        case MoveType::ENPASSANT: {
+            // remove the captured piece from the board
+            auto movingPiece = std::dynamic_pointer_cast<Pawn>(move.movingPiece);
+            int rank = move.destination.rank() - movingPiece->getNormalMoveDirections().front();
+            board_.setPieceAt({rank, move.destination.file()}, nullptr);
+            break;
+        }
+        case MoveType::PROMOTION: {
+            pendingPromotion_ = true;
+            promotionSquare_ = move.destination;
+            break;
+        }
+        case MoveType::CASTLE_KINGSIDE: {
+            int rank = move.destination.rank();
+            Coordinate rookSource = {rank, 7};
+            Coordinate rookDestination = {rank, 5}; //f1 (white), f8 (black)
+            board_.movePiece(rookSource, rookDestination);
+            board_.getPieceAt(rookDestination)->setHasMoved(true);
+            break;
+        }
+        case MoveType::CASTLE_QUEENSIDE: {
+            int rank = move.destination.rank();
+            Coordinate rookSource = {rank, 0};
+            Coordinate rookDestination = {rank, 3}; //d1 (white), d8 (black)
+            board_.movePiece(rookSource, rookDestination);
+            board_.getPieceAt(rookDestination)->setHasMoved(true);
+            break;
+        }
+        default:
+            break;
     }
 }
 
@@ -106,7 +129,7 @@ void Game::updateWinner()
 
 bool Game::isFiftyMoveRule() const
 {
-    return movesHistory_.size() == 1;
+    return movesHistory_.size() >= 50;
 }
 
 bool Game::isRepetition() const

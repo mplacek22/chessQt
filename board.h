@@ -31,20 +31,19 @@ public:
 
     void restart();
 
-
-    [[nodiscard]] bool isPathClear(Coordinate source, Coordinate destination) const;
-
     std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board() const { return board_; };
 
     std::vector<Coordinate> computeCheckers(Color color) const;
 
     Coordinate findKing(Color color) const;
 
-    const bool isFriendly(Coordinate& coord, Color color) const;
+    bool isFriendly(Coordinate& coord, Color color) const;
 
-    const bool isEnemy(Coordinate& coord, Color color) const;
+    bool isEnemy(Coordinate& coord, Color color) const;
 
-    const bool inBounds(Coordinate& coord) const;
+    bool inBounds(Coordinate& coord) const;
+
+    bool isPathClear(const Coordinate& source, const Coordinate& destination) const;
 
 private:
     std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board_;

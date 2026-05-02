@@ -1,13 +1,10 @@
 #include "board.h"
-
 #include <iostream>
-
 #include <Bishop.h>
 #include <King.h>
 #include <Knight.h>
 #include <Queen.h>
 #include <Rook.h>
-// #include <Piece.h>
 #include <Pawn.h>
 
 Board::Board() {
@@ -70,23 +67,6 @@ void Board::restart() {
     initialize();
 }
 
-std::vector<Coordinate> Board::computeCheckers(Color color) const
-{
-    Coordinate kingSquare = findKing(color);
-    Color enemy = (color == Color::WHITE) ? Color::BLACK : Color::WHITE;
-    std::vector<Coordinate> checkers;
-
-    // for (int r = 0; r < 8; ++r)
-    //     for (int c = 0; c < 8; ++c) {
-    //         const auto& piece = board_[r][c];
-    //         if (piece && piece->color() == enemy)
-    //             if (pieceAttacksSquare({r, c}, kingSquare))
-    //                 checkers.push_back({r, c});
-    //     }
-
-    return checkers;
-}
-
 Coordinate Board::findKing(Color color) const
 {
     for (int r = 0; r < board_.size(); r++) {
@@ -100,7 +80,7 @@ Coordinate Board::findKing(Color color) const
     throw std::runtime_error("King not found - board state is invalid!");
 }
 
-const bool Board::isFriendly(Coordinate &coord, Color color) const
+bool Board::isFriendly(Coordinate &coord, Color color) const
 {
     const auto target = getPieceAt(coord);
     if (target) {
@@ -109,7 +89,7 @@ const bool Board::isFriendly(Coordinate &coord, Color color) const
     return false;
 }
 
-const bool Board::isEnemy(Coordinate &coord, Color color) const
+bool Board::isEnemy(Coordinate &coord, Color color) const
 {
     const auto target = getPieceAt(coord);
     if (target) {
@@ -118,12 +98,32 @@ const bool Board::isEnemy(Coordinate &coord, Color color) const
     return false;
 }
 
-const bool Board::inBounds(Coordinate &coord) const
+bool Board::inBounds(Coordinate &coord) const
 {
     return coord.rank() >= 0 && coord.rank() < board_.size()
            && coord.file() >= 0 && coord.file() < board_.size();
 }
 
+bool Board::isPathClear(const Coordinate& source, const Coordinate& destination) const
+{
+    const int dRank = destination.rank() - source.rank();
+    const int dFile = destination.file() - source.file();
+
+    const int stepRank = dRank == 0 ? 0 : dRank > 0 ? 1 : -1;
+    const int stepFile = dFile == 0 ? 0 : dFile > 0 ? 1 : -1;
+
+    int rank = source.rank() + stepRank;
+    int file = source.file() + stepFile;
+
+    while (rank != destination.rank() || file != destination.file()) {
+        if (getPieceAt({rank, file}) != nullptr) {
+            return false;
+        }
+        rank += stepRank;
+        file += stepFile;
+    }
+    return true;
+}
 
 std::shared_ptr<Piece> Board::getPieceAt(const Coordinate& coordinate) const {
     return board_[coordinate.rank()][coordinate.file()];
