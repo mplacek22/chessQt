@@ -8,6 +8,7 @@
 #include <memory>
 #include <array>
 #include <vector>
+#include "Grid.h"
 #include "Piece.h"
 
 
@@ -31,9 +32,7 @@ public:
 
     void restart();
 
-    std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board() const { return board_; };
-
-    std::vector<Coordinate> computeCheckers(Color color) const;
+    Grid<std::shared_ptr<Piece>, BOARD_SIZE, BOARD_SIZE> board() const { return board_; };
 
     Coordinate findKing(Color color) const;
 
@@ -41,12 +40,14 @@ public:
 
     bool isEnemy(Coordinate& coord, Color color) const;
 
-    bool inBounds(Coordinate& coord) const;
+    bool inBounds(const Coordinate& coord) const;
 
     bool isPathClear(const Coordinate& source, const Coordinate& destination) const;
 
+    bool isLightSquare(int rank, int file) const;
+
 private:
-    std::array<std::array<std::shared_ptr<Piece>, BOARD_SIZE>, BOARD_SIZE> board_;
+    Grid<std::shared_ptr<Piece>, BOARD_SIZE, BOARD_SIZE> board_;
     void clear();
 };
 

@@ -56,6 +56,7 @@ SOURCES game_state.h
 QML_FILES qml/GameOverDialog.qml
 SOURCES drawCause.h
 QML_FILES
+SOURCES grid.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

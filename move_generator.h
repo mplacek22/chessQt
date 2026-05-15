@@ -68,8 +68,8 @@ public:
 
         std::vector<Coordinate> checkers;
 
-        for (int r = 0; r < board.board().size(); ++r) {
-            for (int f = 0; f < board.board().size(); ++f) {
+        for (int r = 0; r < Board::BOARD_SIZE; ++r) {
+            for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate source {r, f};
                 auto piece = board.getPieceAt(source);
                 if (!piece || piece->color() != gameState.currentPlayer) continue;
@@ -90,10 +90,11 @@ public:
     }
 
     static bool canPlayerMove(const Board& board, const GameState& gameState, const Color color) {
+        return true;
         std::vector<Coordinate> pieces_coords;
 
-        for (int r = 0; r < board.board().size(); ++r) {
-            for (int f = 0; f < board.board().size(); ++f) {
+        for (int r = 0; r < Board::BOARD_SIZE; ++r) {
+            for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate coord {r, f};
                 auto piece = board.getPieceAt(coord);
                 if(piece && piece->color() == color) {
@@ -115,7 +116,7 @@ private:
     {
         std::vector<std::shared_ptr<Move>> moves;
         int moveDirection = state.currentPlayer == Color::WHITE ? 1 : -1;
-        int promotionRank = state.currentPlayer == Color::WHITE ? board.board().size() - 1 : 0;
+        int promotionRank = state.currentPlayer == Color::WHITE ? Board::BOARD_SIZE - 1 : 0;
 
         // forward move - 1 square
         int rank = source.rank() + moveDirection;
@@ -206,13 +207,13 @@ private:
     static std::vector<Coordinate> computeKingDangerSquares(const Board& board,const Coordinate& kingPosition, const GameState& gameState)
     {
         Color color = board.getPieceAt(kingPosition)->color();
-        std::array<std::array<std::shared_ptr<Piece>, 8>, 8> boardWithoutKing = board.board();
-        boardWithoutKing[kingPosition.rank()][kingPosition.file()] = nullptr;
+        auto boardWithoutKing = board.board();
+        boardWithoutKing.set(kingPosition, nullptr);
 
         std::vector<Coordinate> danger;
-        for (int r = 0; r < boardWithoutKing.size(); r++) {
-            for (int f = 0; f < boardWithoutKing.size(); f++) {
-                const auto piece = boardWithoutKing[r][f];
+        for (int r = 0; r < Board::BOARD_SIZE; r++) {
+            for (int f = 0; f < Board::BOARD_SIZE; f++) {
+                const auto piece = boardWithoutKing.at({r, f});
                 if (piece && piece->color() != color) {
                     for (const auto&  m : MoveGenerator::calculatePseudoLegalMoves(board, {r, f}, gameState)) {
                         danger.push_back(m->destination);
@@ -260,8 +261,8 @@ private:
 
     static bool isSquareAttackedBy(const Board& board, const Coordinate& target, Color attackerColor, const GameState& gameState)
     {
-        for (int r = 0; r < board.board().size(); ++r) {
-            for (int f = 0; f < board.board().size(); ++f) {
+        for (int r = 0; r < Board::BOARD_SIZE; ++r) {
+            for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate source = {r, f};
                 auto piece = board.getPieceAt(source);
                 if (!piece || piece->color() != attackerColor) continue;
