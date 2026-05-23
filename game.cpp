@@ -91,8 +91,14 @@ void Game::updateGameStatus() {
         setDraw(DrawCause::FIFTY_MOVE_RULE);
         return;
     }
+
+    if(isInsufficientMaterial()) {
+        setDraw(DrawCause::INSUFFICIENT_MATERIAL);
+        return;
+    }
+
     // todo: repetition
-    // todo: insuficcient material
+
     Color enemyColor = oppositeColor(currentPlayer_);
     GameState state = gameState();
     bool canEnemyMove = MoveGenerator::canPlayerMove(board_, state, enemyColor);
@@ -134,6 +140,60 @@ bool Game::isFiftyMoveRule() const
 
 bool Game::isRepetition() const
 {
+    return false;
+}
+
+bool Game::isInsufficientMaterial() const
+{
+    struct PieceCounts {
+        int knights = 0;
+        int total   = 0;
+        bool hasBishopOnLight = false;
+        bool hasBishopOnDark  = false;
+    };
+
+    PieceCounts white, black;
+
+    for (int r = 0; r < Board::BOARD_SIZE; ++r) {
+        for (int f = 0; f < Board::BOARD_SIZE; ++f) {
+            auto piece = board_.getPieceAt({r, f});
+            if (!piece) continue;
+
+            auto& counts = (piece->color() == Color::WHITE) ? white : black;
+
+            switch (piece->type()) {
+            case PieceType::PAWN:
+            case PieceType::ROOK:
+            case PieceType::QUEEN:
+                return false; // any major piece (P, R, Q) -> sufficient material
+            case PieceType::KNIGHT:
+                ++counts.total;
+                ++counts.knights;
+                break;
+            case PieceType::BISHOP:
+                ++counts.total;
+                (board_.isLightSquare(r, f) ? counts.hasBishopOnLight : counts.hasBishopOnDark) = true;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    // K vs K
+    if (white.total == 0 && black.total == 0) return true;
+
+    // K + minor vs K
+    if ((white.total == 1 && black.total == 0) ||
+        (black.total == 1 && white.total == 0)) return true;
+
+    // KB vs KB on the same square color
+    const bool sameColorBishops =
+        (white.hasBishopOnLight && black.hasBishopOnLight) ||
+        (white.hasBishopOnDark  && black.hasBishopOnDark);
+
+    if (white.total == 1 && black.total == 1 && sameColorBishops) return true;
+
     return false;
 }
 
