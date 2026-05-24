@@ -11,28 +11,28 @@ Board::Board() {
 }
 
 void Board::initialize() {
-    board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));
-    board_.set(0, 1, std::make_shared<Knight>(Color::WHITE));
-    board_.set(0, 2, std::make_shared<Bishop>(Color::WHITE));
-    board_.set(0, 3, std::make_shared<Queen>(Color::WHITE));
-    board_.set(0, 4, std::make_shared<King>(Color::WHITE));
-    board_.set(0, 5, std::make_shared<Bishop>(Color::WHITE));
-    board_.set(0, 6, std::make_shared<Knight>(Color::WHITE));
-    board_.set(0, 7, std::make_shared<Rook>(Color::WHITE));
+    // board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));
+    // board_.set(0, 1, std::make_shared<Knight>(Color::WHITE));
+    // board_.set(0, 2, std::make_shared<Bishop>(Color::WHITE));
+    // board_.set(0, 3, std::make_shared<Queen>(Color::WHITE));
+    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));
+    // board_.set(0, 5, std::make_shared<Bishop>(Color::WHITE));
+    // board_.set(0, 6, std::make_shared<Knight>(Color::WHITE));
+    // board_.set(0, 7, std::make_shared<Rook>(Color::WHITE));
 
-    for (int i = 0; i < 8; ++i) {
-        board_.set(1, i, std::make_shared<Pawn>(Color::WHITE));
-        board_.set(6, i, std::make_shared<Pawn>(Color::BLACK));
-    }
+    // for (int i = 0; i < 8; ++i) {
+    //     board_.set(1, i, std::make_shared<Pawn>(Color::WHITE));
+    //     board_.set(6, i, std::make_shared<Pawn>(Color::BLACK));
+    // }
 
-    board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));
-    board_.set(7, 1, std::make_shared<Knight>(Color::BLACK));
-    board_.set(7, 2, std::make_shared<Bishop>(Color::BLACK));
-    board_.set(7, 3, std::make_shared<Queen>(Color::BLACK));
-    board_.set(7, 4, std::make_shared<King>(Color::BLACK));
-    board_.set(7, 5, std::make_shared<Bishop>(Color::BLACK));
-    board_.set(7, 6, std::make_shared<Knight>(Color::BLACK));
-    board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));
+    // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));
+    // board_.set(7, 1, std::make_shared<Knight>(Color::BLACK));
+    // board_.set(7, 2, std::make_shared<Bishop>(Color::BLACK));
+    // board_.set(7, 3, std::make_shared<Queen>(Color::BLACK));
+    // board_.set(7, 4, std::make_shared<King>(Color::BLACK));
+    // board_.set(7, 5, std::make_shared<Bishop>(Color::BLACK));
+    // board_.set(7, 6, std::make_shared<Knight>(Color::BLACK));
+    // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));
 
     // // double check
     // // White pieces
@@ -47,14 +47,14 @@ void Board::initialize() {
 
     // // almost check
     // // White pieces
-    // // board_.set(0, 4, std::make_shared<King>(Color::WHITE));
-    // // board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));    // Will give check on e-file
-    // // board_.set(2, 6, std::make_shared<Bishop>(Color::WHITE));  // Will give check on diagonal
+    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));
+    // board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));    // Will give check on e-file
+    // board_.set(2, 6, std::make_shared<Bishop>(Color::WHITE));  // Will give check on diagonal
 
     // // Black pieces
-    // // board_.set(7, 4, std::make_shared<King>(Color::BLACK));    // Black King on e8
-    // // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));    // Blocker removed to expose check
-    // // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));
+    // board_.set(7, 4, std::make_shared<King>(Color::BLACK));    // Black King on e8
+    // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));    // Blocker removed to expose check
+    // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));
 
     // // pinned pieces
     // // White pieces
@@ -76,13 +76,13 @@ void Board::initialize() {
 
     // // almost checkmate
     // // White king
-    // // board_.set(5, 5, std::make_shared<King>(Color::WHITE));   // f6
+    board_.set(5, 5, std::make_shared<King>(Color::WHITE));   // f6
 
-    // // White queen
-    // // board_.set(5, 6, std::make_shared<Queen>(Color::WHITE));  // g6
+    // White queen
+    board_.set(5, 6, std::make_shared<Queen>(Color::WHITE));  // g6
 
-    // // Black king
-    // // board_.set(7, 7, std::make_shared<King>(Color::BLACK));   // h8
+    // Black king
+    board_.set(7, 7, std::make_shared<King>(Color::BLACK));   // h8
 
     // // castling
     // // --- WHITE (rank 0) ---
@@ -102,24 +102,16 @@ void Board::initialize() {
 
     // // --- A white rook on e5 gives check to black king on e8, preventing king-side castle ---
     // board_.set(4, 4, std::make_shared<Rook>(Color::WHITE));     // e5 - attacks e8, puts black in SINGLE_CHECK
-}
 
-// void Board::display() const {
-//     std::cout << "   a b c d e f g h\n  -----------------" << std::endl;
-//     for (int i = 7; i >= 0; --i) {
-//         std::string line = std::to_string(i + 1) + "| ";
-//         for (int j = 0; j < 8; ++j) {
-//             if (board_[i][j] != nullptr) {
-//                 line += board_[i][j]->name();
-//             } else
-//                 line += '.';
-//             line += ' ';
-//         }
-//         line += '|' + std::to_string(i + 1);
-//         std::cout << line << std::endl;
-//     }
-//     std::cout << "  -----------------\n   a b c d e f g h" << std::endl;
-// }
+
+    // // insufficient material
+    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));   // e1
+    // board_.set(1, 7, std::make_shared<Bishop>(Color::WHITE)); // h2 (light square)
+
+    // board_.set(7, 7, std::make_shared<King>(Color::BLACK));   // h8
+    // board_.set(4, 4, std::make_shared<Bishop>(Color::BLACK)); // e5 (light square) — capturable by Bd4
+
+}
 
 void Board::setPieceAt(const Coordinate& coordinate, std::shared_ptr<Piece> piece) {
     board_.set(coordinate, piece);
@@ -172,16 +164,16 @@ bool Board::inBounds(const Coordinate &coord) const
 
 bool Board::isPathClear(const Coordinate& source, const Coordinate& destination) const
 {
-    const int dRank = destination.rank() - source.rank();
-    const int dFile = destination.file() - source.file();
+    const int dRank = destination.rank - source.rank;
+    const int dFile = destination.file - source.file;
 
     const int stepRank = dRank == 0 ? 0 : dRank > 0 ? 1 : -1;
     const int stepFile = dFile == 0 ? 0 : dFile > 0 ? 1 : -1;
 
-    int rank = source.rank() + stepRank;
-    int file = source.file() + stepFile;
+    int rank = source.rank + stepRank;
+    int file = source.file + stepFile;
 
-    while (rank != destination.rank() || file != destination.file()) {
+    while (rank != destination.rank || file != destination.file) {
         if (getPieceAt({rank, file}) != nullptr) {
             return false;
         }

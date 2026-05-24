@@ -2,8 +2,6 @@
 #include "move_generator.h"
 #include "pawn.h"
 
-#include <qDebug>
-
 Game::Game() {}
 
 
@@ -52,17 +50,20 @@ void Game::executeMove(const Move& move) {
         case MoveType::ENPASSANT: {
             // remove the captured piece from the board
             auto movingPiece = std::dynamic_pointer_cast<Pawn>(move.movingPiece);
-            int rank = move.destination.rank() - movingPiece->getNormalMoveDirections().front();
-            board_.setPieceAt({rank, move.destination.file()}, nullptr);
+            int rank = move.destination.rank - movingPiece->getNormalMoveDirections().front();
+            board_.setPieceAt({rank, move.destination.file}, nullptr);
             break;
         }
         case MoveType::PROMOTION: {
-            pendingPromotion_ = true;
             promotionSquare_ = move.destination;
+            pendingPromotion_ = true;
+            if(move.promotionPieceType) {
+                promotePawn(move.promotionPieceType.value());
+            }
             break;
         }
         case MoveType::CASTLE_KINGSIDE: {
-            int rank = move.destination.rank();
+            int rank = move.destination.rank;
             Coordinate rookSource = {rank, 7};
             Coordinate rookDestination = {rank, 5}; //f1 (white), f8 (black)
             board_.movePiece(rookSource, rookDestination);
@@ -70,7 +71,7 @@ void Game::executeMove(const Move& move) {
             break;
         }
         case MoveType::CASTLE_QUEENSIDE: {
-            int rank = move.destination.rank();
+            int rank = move.destination.rank;
             Coordinate rookSource = {rank, 0};
             Coordinate rookDestination = {rank, 3}; //d1 (white), d8 (black)
             board_.movePiece(rookSource, rookDestination);
@@ -208,8 +209,8 @@ void Game::setDraw(DrawCause drawCause)
     drawCause_ = drawCause;
 }
 void Game::processMove(Move& move) {
-    executeMove(move);
     movesHistory_.push_back(move);
+    executeMove(move);
     if (pendingPromotion_) {
         return;
     }
@@ -234,4 +235,9 @@ void Game::promotePawn(PieceType type)
 const GameState Game::gameState() const
 {
     return {currentPlayer_, status_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())};
+}
+
+bool Game::isGameOngoing() const
+{
+    return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(status_));
 }

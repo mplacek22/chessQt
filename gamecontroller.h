@@ -5,8 +5,9 @@
 #include "game.h"
 #include "boardmodel.h"
 #include "chessEnums.h"
+#include "IGameObserver.h"
 
-class GameController : public QObject {
+class GameController : public QObject, public IGameObserver {
     Q_OBJECT
     Q_PROPERTY(BoardModel* board READ board CONSTANT) // QML expects raw pointer for qt property
     Q_PROPERTY(Chess::Enums::Color currentPlayer READ currentPlayer NOTIFY currentPlayerChanged)
@@ -25,9 +26,9 @@ public:
     QString status() const;
     QStringList movesList() const;
     bool pendingPromotion() const { return game_->pendingPromotion(); }
-    bool isGameOngoing() const;
     int winner() const;
     QString drawCause() const;
+    bool isGameOngoing() const {return game_->isGameOngoing(); }
 
     Q_INVOKABLE void startGame();
     Q_INVOKABLE void restartGame();
@@ -36,17 +37,12 @@ public:
 signals:
     void currentPlayerChanged();
     void statusChanged();
-    // void gameOver(QString winner);
     void movesChanged();
     void pendingPromotionChanged();
 
 private:
     std::shared_ptr<Game> game_;
     std::unique_ptr<BoardModel> boardModel_;
-    static constexpr int ONGOING_GAME_STATUSES_MASK =
-        (1 << static_cast<int>(GameStatus::IN_PROGRESS)) |
-        (1 << static_cast<int>(GameStatus::SINGLE_CHECK)) |
-        (1 << static_cast<int>(GameStatus::DOUBLE_CHECK));
 
     void onMoveExecuted();
 };

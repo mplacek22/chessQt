@@ -5,11 +5,6 @@
 #include "game_state.h"
 #include <algorithm>
 
-struct PinInfo {
-    Coordinate pinnedPiecePosition;
-    std::vector<Coordinate> allowedSquares; // squares the pinned piece can move to
-};
-
 class MoveGenerator
 {
 public:
@@ -90,7 +85,6 @@ public:
     }
 
     static bool canPlayerMove(const Board& board, const GameState& gameState, const Color color) {
-        return true;
         std::vector<Coordinate> pieces_coords;
 
         for (int r = 0; r < Board::BOARD_SIZE; ++r) {
@@ -111,6 +105,14 @@ public:
         return false;
     }
 
+    static bool canCastleKingSide(const Board& board, const GameState& state) {
+        return canCastle(board, state, /*kingSide=*/true);
+    }
+
+    static bool canCastleQueenSide(const Board& board, const GameState& state) {
+        return canCastle(board, state, /*kingSide=*/false);
+    }
+
 private:
     static std::vector<std::shared_ptr<Move>> calculatePawnMoves(const Board& board, const Coordinate& source, const GameState& state)
     {
@@ -119,8 +121,8 @@ private:
         int promotionRank = state.currentPlayer == Color::WHITE ? Board::BOARD_SIZE - 1 : 0;
 
         // forward move - 1 square
-        int rank = source.rank() + moveDirection;
-        int file = source.file();
+        int rank = source.rank + moveDirection;
+        int file = source.file;
         Coordinate destination {rank, file};
         const auto movingPiece = board.getPieceAt(source);
 
@@ -146,9 +148,9 @@ private:
         }
 
         // capture
-        rank = source.rank() + moveDirection;
+        rank = source.rank + moveDirection;
         for (int f : {-1, 1}) {
-            file = source.file() + f;
+            file = source.file + f;
             destination = {rank, file};
             if (board.inBounds(destination)){
                 auto move = std::make_shared<Move>(source, destination, state.currentPlayer);
@@ -161,14 +163,14 @@ private:
                 }
                 // en passant
                 if (state.lastMove && state.lastMove->moveType == MoveType::PAWN_DOUBLE_NORMAL){
-                    int df = state.lastMove.value().destination.file() - source.file();
+                    int df = state.lastMove.value().destination.file - source.file;
                     // is captured piece next to moving piece
-                    bool next = state.lastMove.value().destination.rank() == source.rank() && (df == 1 || df == -1);
+                    bool next = state.lastMove.value().destination.rank == source.rank && (df == 1 || df == -1);
                     // check if the destination of the last move matches the expected captured pawn position
-                    bool isCapturableTarget = state.lastMove->destination.file() == destination.file();
+                    bool isCapturableTarget = state.lastMove->destination.file == destination.file;
                     if (board.getPieceAt(destination) == nullptr && next && isCapturableTarget) {
                         move->moveType = MoveType::ENPASSANT;
-                        move->capturedPiece = board.getPieceAt({source.rank(), file});
+                        move->capturedPiece = board.getPieceAt({source.rank, file});
                         moves.push_back(std::move(move));
                     }
                 }
@@ -188,14 +190,14 @@ private:
             return std::ranges::find(dangerSquares, m->destination) != dangerSquares.end();
         });
 
-        if(canCastleKingSide(board, source, state)) {
-            auto move = std::make_shared<Move>(source, Coordinate{source.rank(), 6}, state.currentPlayer);
+        if(canCastleKingSide(board, state)) {
+            auto move = std::make_shared<Move>(source, Coordinate{source.rank, 6}, state.currentPlayer);
             move->moveType = MoveType::CASTLE_KINGSIDE;
             move->movingPiece = board.getPieceAt(source);
             moves.push_back(move);
         }
-        if(canCastleQueenSide(board, source, state)) {
-            auto move = std::make_shared<Move>(source, Coordinate{source.rank(), 2}, state.currentPlayer);
+        if(canCastleQueenSide(board, state)) {
+            auto move = std::make_shared<Move>(source, Coordinate{source.rank, 2}, state.currentPlayer);
             move->moveType = MoveType::CASTLE_QUEENSIDE;
             move->movingPiece = board.getPieceAt(source);
             moves.push_back(move);
@@ -224,19 +226,21 @@ private:
         return danger;
     }
 
-    static bool canCastle(const Board& board, const Coordinate& kingPosition, const GameState& state, bool kingSide) {
+    static bool canCastle(const Board& board, const GameState& state, bool kingSide) {
         // no check
         if(state.gameStatus == GameStatus::SINGLE_CHECK || state.gameStatus == GameStatus::DOUBLE_CHECK){
             return false;
         }
         // king hasnt moved
+        Coordinate kingStartPosition(state.currentPlayer == Color::WHITE ? 0 : 7, 4);
+        Coordinate kingPosition = board.findKing(state.currentPlayer);
         auto king = board.getPieceAt(kingPosition);
-        if(king->hasMoved()) {
+        if(kingPosition != kingStartPosition || king->hasMoved()) {
             return false;
         }
         // rook hasnt moved
         int rookFileOffset = kingSide ? 3 : -4;
-        Coordinate rookStartPosition = {kingPosition.rank(), kingPosition.file() + rookFileOffset};
+        Coordinate rookStartPosition = {kingPosition.rank, kingPosition.file + rookFileOffset};
         auto rook = board.getPieceAt(rookStartPosition);
         if (!rook || rook->type() != PieceType::ROOK || rook->hasMoved()) {
             return false;
@@ -250,7 +254,7 @@ private:
         Color attackerColor = state.currentPlayer == Color::WHITE ? Color::BLACK : Color::WHITE;
         int direction = kingSide ? 1 : -1;
         for (int step = 0; step <= 2; ++step) {
-            Coordinate square = {kingPosition.rank(), kingPosition.file() + direction * step};
+            Coordinate square = {kingPosition.rank, kingPosition.file + direction * step};
             if (isSquareAttackedBy(board, square, attackerColor, state)) {
                 return false;
             }
@@ -261,13 +265,15 @@ private:
 
     static bool isSquareAttackedBy(const Board& board, const Coordinate& target, Color attackerColor, const GameState& gameState)
     {
+        GameState nextMoveState{attackerColor, gameState.gameStatus};
+
         for (int r = 0; r < Board::BOARD_SIZE; ++r) {
             for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate source = {r, f};
                 auto piece = board.getPieceAt(source);
                 if (!piece || piece->color() != attackerColor) continue;
 
-                auto moves = calculatePseudoLegalMoves(board, source, gameState);
+                auto moves = calculatePseudoLegalMoves(board, source, nextMoveState);
 
                 for (const auto& move : moves) {
                     if (move->destination == target && move->capturedPiece)
@@ -285,8 +291,8 @@ private:
         std::vector<std::shared_ptr<Move>> moves;
 
         for (const auto& dir : piece->getMoveDirections()) {
-            int rank = source.rank();
-            int file = source.file();
+            int rank = source.rank;
+            int file = source.file;
 
             do {
                 rank += dir[0];
@@ -318,102 +324,6 @@ private:
         return moves;
     }
 
-    static std::vector<PinInfo> computePins(const Board& board, const GameState& gameState)
-    {
-        std::vector<PinInfo> pins;
-        Coordinate kingPos = board.findKing(gameState.currentPlayer);
-
-        static const std::vector<std::pair<int,int>> allDirs = {
-            {1,0},{-1,0},{0,1},{0,-1},   // straight
-            {1,1},{1,-1},{-1,1},{-1,-1}  // diagonal
-        };
-
-        for (auto [df, dr] : allDirs) {
-            // Ray from king outward, look for a friendly piece then an enemy slider
-            Coordinate cursor{kingPos.rank() + dr, kingPos.file() + df};
-            Coordinate candidatePinned{-1, -1};   // first friendly piece found on ray
-
-            while (board.inBounds(cursor)) {
-                auto piece = board.getPieceAt(cursor);
-
-                if (!piece) {
-                    cursor = {cursor.rank() + dr, cursor.file() + df};
-                    continue;
-                }
-
-                if (piece->color() == gameState.currentPlayer) {
-                    if (candidatePinned.rank() != -1) break; // second friendly -> no pin
-                    candidatePinned = cursor; // first friendly -> candidate
-                } else {
-                    // Enemy piece -> check if it can slide along this ray
-                    bool canPin = false;
-                    if (piece->isSliding()) {
-                        for (const auto& pieceDir : piece->getMoveDirections()) {
-                            // Enemy piece attacks along this ray if one of its directions
-                            // is the OPPOSITE of our outward ray from the king
-                            if (pieceDir[0] == -dr && pieceDir[1] == -df) {
-                                canPin = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (canPin && candidatePinned.rank() != -1) {
-                        // ── Step 3: overlap confirmed — candidatePinned is pinned ──
-                        // Legal squares = ray from king up to and including the pinner
-                        PinInfo pin {candidatePinned, {}};
-
-                        // Collect allowed squares: king → pinned → pinner (inclusive)
-                        Coordinate sq{kingPos.rank() + dr, kingPos.file() + df};
-                        while (board.inBounds(sq)) {
-                            pin.allowedSquares.push_back(sq);
-                            if (board.getPieceAt(sq)) break; // stop at pinner (inclusive)
-                            sq = {sq.rank() + dr, sq.file() + df};
-                        }
-
-                        pins.push_back(pin);
-                    }
-                    break; // enemy piece ends the ray regardless
-                }
-                cursor = {cursor.rank() + dr, cursor.file() + df};
-            }
-        }
-
-        return pins;
-    }
-
-    static std::vector<std::shared_ptr<Move>> filterPinnedMoves(const Board& board,
-                                                                const Coordinate& source,
-                                                                const std::vector<std::shared_ptr<Move>>& moves,
-                                                                const GameState& gameState)
-    {
-        if (moves.empty()) return moves;
-
-        auto pins = computePins(board, gameState);
-
-        auto it = std::find_if(pins.begin(), pins.end(),
-                               [&source](const PinInfo& pin) {
-                                   return pin.pinnedPiecePosition == source;
-                               });
-
-        // not pinned
-        if (it == pins.end()) return moves;
-
-        // knights cannot move when pinned
-        if (board.getPieceAt(source)->type() == PieceType::KNIGHT) return {};
-
-        const auto& allowedSquares = it->allowedSquares;
-        std::vector<std::shared_ptr<Move>> filtered;
-        filtered.reserve(moves.size());
-        std::copy_if(moves.begin(), moves.end(), std::back_inserter(filtered),
-                     [&allowedSquares](const std::shared_ptr<Move>& move) {
-                         return std::find(allowedSquares.begin(), allowedSquares.end(),
-                                          move->destination) != allowedSquares.end();
-                     });
-
-        return filtered;
-    }
-
     static bool leavesKingInCheck(const std::shared_ptr<Move> move, const Board& board, const GameState& state)
     {
         Board copy = board;
@@ -424,13 +334,5 @@ private:
         auto kingSquare = copy.findKing(movingPiece->color());
         Color enemy = (movingPiece->color() == Color::WHITE) ? Color::BLACK : Color::WHITE;
         return isSquareAttackedBy(copy, kingSquare, enemy, state);
-    }
-
-    static bool canCastleKingSide(const Board& board, const Coordinate& kingPosition, const GameState& state) {
-        return canCastle(board, kingPosition, state, /*kingSide=*/true);
-    }
-
-    static bool canCastleQueenSide(const Board& board, const Coordinate& kingPosition, const GameState& state) {
-        return canCastle(board, kingPosition, state, /*kingSide=*/false);
     }
 };

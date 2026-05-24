@@ -1,5 +1,6 @@
 #include "gamecontroller.h"
 #include "pieceUtils.h"
+#include "algebraicNotationTranslator.h"
 
 GameController::GameController(QObject* parent)
     : QObject(parent),
@@ -59,17 +60,12 @@ QStringList GameController::movesList() const {
     const auto& moves = game_->movesHistory();
     for (size_t i = 0; i < moves.size(); i += 2) {
         QString entry = QString("%1. %2").arg(i/2 + 1)
-        .arg(QString::fromStdString(Move::toChessNotation(moves[i])));
+        .arg(QString::fromStdString(AlgebraicNotationTranslator::toSAN(moves[i])));
         if (i + 1 < moves.size())
-            entry += "  " + QString::fromStdString(Move::toChessNotation(moves[i+1]));
+            entry += "  " + QString::fromStdString(AlgebraicNotationTranslator::toSAN(moves[i+1]));
         result.append(entry);
     }
     return result;
-}
-
-bool GameController::isGameOngoing() const
-{
-    return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(game_->status()));
 }
 
 int GameController::winner() const

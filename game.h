@@ -5,6 +5,7 @@
 #include "Board.h"
 #include "Move.h"
 #include "game_state.h"
+#include "IGameObserver.h"
 
 #include <DrawCause.h>
 #include <vector>
@@ -20,7 +21,7 @@ public:
 
     void exit();
 
-    [[nodiscard]] Board& board() { return board_; }
+    [[nodiscard]] const Board& board() const { return board_; }
 
     [[nodiscard]] Color currentPlayer() const { return currentPlayer_; }
 
@@ -42,6 +43,12 @@ public:
 
     const std::optional<Color> winner() { return winner_; }
 
+    void setObserver(std::weak_ptr<IGameObserver> observer) {
+        observer_ = std::move(observer);
+    }
+
+    bool isGameOngoing() const;
+
 private:
     Color currentPlayer_ = Color::WHITE;
     Board board_ = Board();
@@ -51,6 +58,11 @@ private:
     std::optional<Coordinate> promotionSquare_;
     std::optional<Color> winner_;
     std::optional<DrawCause> drawCause_;
+    std::weak_ptr<IGameObserver> observer_;
+    static constexpr int ONGOING_GAME_STATUSES_MASK =
+        (1 << static_cast<int>(GameStatus::IN_PROGRESS)) |
+        (1 << static_cast<int>(GameStatus::SINGLE_CHECK)) |
+        (1 << static_cast<int>(GameStatus::DOUBLE_CHECK));
 
     void switchPlayer();
 

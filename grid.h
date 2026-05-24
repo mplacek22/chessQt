@@ -3,6 +3,7 @@
 #include "Coordinate.h"
 
 #include <array>
+#include <stdexcept>
 
 
 template<typename T, int Rows = 8, int Cols = 8>
@@ -19,7 +20,7 @@ public:
     }
     const T& at(const Coordinate& coordinate) const
     {
-        return at(coordinate.rank(), coordinate.file());
+        return at(coordinate.rank, coordinate.file);
     }
     void set(int row, int col, T val)
     {
@@ -30,7 +31,7 @@ public:
     }
     void set(const Coordinate& coordinate, T val)
     {
-        set(coordinate.rank(), coordinate.file(), val);
+        set(coordinate.rank, coordinate.file, val);
     }
     void move(int rowSrc, int colSrc, int rowDest, int colDest)
     {
@@ -42,7 +43,7 @@ public:
     }
     void move(const Coordinate& source, const Coordinate& destination)
     {
-        move(source.rank(), source.file(), destination.rank(), destination.file());
+        move(source.rank, source.file, destination.rank, destination.file);
     }
     bool inBounds(int row, int col) const
     {
@@ -50,7 +51,7 @@ public:
     }
     bool inBounds(const Coordinate& coordinate) const
     {
-        return inBounds(coordinate.rank(), coordinate.file());
+        return inBounds(coordinate.rank, coordinate.file);
     }
 protected:
     std::array<std::array<T, Cols>, Rows> data;

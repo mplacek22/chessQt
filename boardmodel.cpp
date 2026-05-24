@@ -85,7 +85,7 @@ void BoardModel::selectSourceSquare(int rank, int file)
 
     highlightedSquares_.clear();
     for (const auto& move : activeMoves_)
-        highlightedSquares_.append({move->destination.rank(), move->destination.file()});
+        highlightedSquares_.append({move->destination.rank, move->destination.file});
 
     emit selectionChanged();
     emit dataChanged(index(0), index(63));

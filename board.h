@@ -22,8 +22,6 @@ public:
 
     void initialize();
 
-    void display() const;
-
     [[nodiscard]] std::shared_ptr<Piece> getPieceAt(const Coordinate &coordinate) const;
 
     void setPieceAt(const Coordinate &coordinate, std::shared_ptr<Piece> piece);

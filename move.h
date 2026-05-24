@@ -22,6 +22,4 @@ struct Move {
     Move(const Coordinate source, const Coordinate destination, const Color currentPlayer): source(source),
         destination(destination), player(currentPlayer) {
     }
-
-    static const std::string toChessNotation(const Move& move);
 };
