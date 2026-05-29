@@ -1,11 +1,10 @@
 #pragma once
 
-#include "gameStatus.h"
-#include "Piece.h"
+#include "Color.h"
 #include "coordinate.h"
 #include "MoveType.h"
 #include "PieceType.h"
-#include <memory>
+#include "gameStatus.h"
 #include <optional>
 
 struct Move {
@@ -13,11 +12,11 @@ struct Move {
     Coordinate destination;
     MoveType moveType = MoveType::NORMAL;
     std::optional<PieceType> promotionPieceType;
-    std::shared_ptr<Piece> movingPiece = nullptr;
-    std::shared_ptr<Piece> capturedPiece = nullptr;
+    PieceType movingPieceType;
     Color player;
-    GameStatus gameStatus;
     bool isAmbiguous = false;
+    bool isCapture = false;
+    GameStatus gameStatusAfterMove;
 
     Move(const Coordinate source, const Coordinate destination, const Color currentPlayer): source(source),
         destination(destination), player(currentPlayer) {

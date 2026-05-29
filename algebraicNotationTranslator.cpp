@@ -9,8 +9,8 @@ std::string AlgebraicNotationTranslator::toSAN(const Move &move)
     if (move.moveType == MoveType::CASTLE_QUEENSIDE) return "O-O-O";
 
     std::string notation;
-    if (move.movingPiece->type() != PieceType::PAWN) {
-        notation += move.movingPiece->name();
+    if(move.movingPieceType != PieceType::PAWN) {
+        notation += pieceTypeToChar(move.movingPieceType);
     }
 
     // if(move.isAmbiguous) {
@@ -19,7 +19,7 @@ std::string AlgebraicNotationTranslator::toSAN(const Move &move)
     notation += coordinateToSAN(move.source);
 
 
-    if (move.capturedPiece) {
+    if (move.isCapture) {
         notation += 'x';
     }
 
@@ -37,7 +37,7 @@ std::string AlgebraicNotationTranslator::toSAN(const Move &move)
         }
     }
 
-    switch (move.gameStatus) {
+    switch (move.gameStatusAfterMove) {
     case GameStatus::SINGLE_CHECK: notation += '+'; break;
     case GameStatus::DOUBLE_CHECK: notation += '+'; break;
     case GameStatus::CHECK_MATE: notation += '#'; break;
@@ -103,7 +103,7 @@ Move AlgebraicNotationTranslator::fromSAN(const std::string& san, const Board& b
     Coordinate source{disambigRank.value(), disambigFile.value()};
 
     // matching legal moves
-    std::vector<std::shared_ptr<Move>> candidates;
+    std::vector<Move> candidates;
     // tod add disambig
     auto piece = board.getPieceAt(source);
     if(!piece || piece->color() != gameState.currentPlayer || piece->type() != movingType){
@@ -111,44 +111,22 @@ Move AlgebraicNotationTranslator::fromSAN(const std::string& san, const Board& b
     }
     auto moves = MoveGenerator::calculatePossibleMoves(board, source, gameState);
     for (auto& m : moves) {
-        if (m->destination != destination) continue;
-        // if (m->capturedPiece !=)
+        if (m.destination != destination) continue;
+        if (m.isCapture != isCapture)
         if(promotionPiece) {
-            if(m->moveType != MoveType::PROMOTION) continue;
-            m->promotionPieceType = promotionPiece.value();
+            if(m.moveType != MoveType::PROMOTION) continue;
+            m.promotionPieceType = promotionPiece.value();
 
         }
         candidates.push_back(m);
     }
-
-    // for (int rank = 0; rank < 8; ++rank) {
-    //     for (int file = 0; file < 8; ++file) {
-    //         Coordinate src(rank, file);
-    //         auto piece = board.getPieceAt(src);
-    //         if (!piece) continue;
-    //         if (piece->color() != gameState.currentPlayer) continue;
-    //         if (piece->type() != movingType) continue;
-
-    //         // Apply disambiguation
-    //         if (disambigFile && file != *disambigFile) continue;
-    //         if (disambigRank && rank != *disambigRank) continue;
-
-    //         auto moves = MoveGenerator::calculatePossibleMoves(board, src, gameState);
-    //         for (auto& m : moves) {
-    //             if (m->destination.rank != destination.rank) continue;
-    //             if (m->destination.file != destination.file) continue;
-    //             if (promotionPiece && m->promotionPieceType != promotionPiece) continue;
-    //             candidates.push_back(m);
-    //         }
-    //     }
-    // }
 
     if (candidates.empty())
         throw InvalidSanException("No legal move found for SAN: " + san);
     if (candidates.size() > 1)
         throw InvalidSanException("Ambiguous SAN (multiple matches): " + san);
 
-    return *candidates[0];
+    return candidates[0];
 
     throw InvalidSanException("Invalid value");
 }
@@ -316,7 +294,7 @@ Move AlgebraicNotationTranslator::resolveCastle(bool isKingSide, const Board &bo
         if(MoveGenerator::canCastleKingSide(board, gameState)) {
             auto move = Move{source, Coordinate{rank , 6}, gameState.currentPlayer};
             move.moveType = MoveType::CASTLE_KINGSIDE;
-            move.movingPiece = board.getPieceAt(source);
+            move.movingPieceType = PieceType::KING;
             return move;
         }
         throw InvalidSanException("Can't castle king side.");
@@ -324,7 +302,7 @@ Move AlgebraicNotationTranslator::resolveCastle(bool isKingSide, const Board &bo
     if(MoveGenerator::canCastleKingSide(board, gameState)) {
         auto move = Move{source, Coordinate{rank , 2}, gameState.currentPlayer};
         move.moveType = MoveType::CASTLE_KINGSIDE;
-        move.movingPiece = board.getPieceAt(source);
+        move.movingPieceType = PieceType::KING;
         return move;
     }
     throw InvalidSanException("Can't castle queen side.");
@@ -340,5 +318,17 @@ PieceType AlgebraicNotationTranslator::charToPieceType(char c)
         case 'Q': return PieceType::QUEEN;
         case 'R': return PieceType::ROOK;
         default: throw InvalidSanException(std::string("Unknown piece char: ") + c);
+    }
+}
+
+char AlgebraicNotationTranslator::pieceTypeToChar(PieceType pieceType)
+{
+    switch (pieceType) {
+    case PieceType::BISHOP: return 'B';
+    case PieceType::KING: return 'K';
+    case PieceType::KNIGHT: return 'N';
+    case PieceType::ROOK: return 'R';
+    case PieceType::QUEEN: return 'Q';
+    default: return '\0';
     }
 }

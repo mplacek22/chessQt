@@ -85,7 +85,7 @@ void BoardModel::selectSourceSquare(int rank, int file)
 
     highlightedSquares_.clear();
     for (const auto& move : activeMoves_)
-        highlightedSquares_.append({move->destination.rank, move->destination.file});
+        highlightedSquares_.append({move.destination.rank, move.destination.file});
 
     emit selectionChanged();
     emit dataChanged(index(0), index(63));
@@ -105,12 +105,12 @@ void BoardModel::selectDestinationSquare(int rank, int file)
     // Second square clicked — attempt the move
     Coordinate destination(rank, file);
     auto it = std::find_if(activeMoves_.begin(), activeMoves_.end(),
-        [&](const std::shared_ptr<Move>& m) {
-       return m->destination == destination;
+        [&](const Move& m) {
+       return m.destination == destination;
     });
 
     if (it != activeMoves_.end()) {
-        game_->processMove(**it);
+        game_->processMove(*it);
         selectedRow_ = -1;
         selectedCol_ = -1;
         highlightedSquares_.clear();

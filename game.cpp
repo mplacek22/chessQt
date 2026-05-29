@@ -4,33 +4,8 @@
 
 Game::Game() {}
 
-
 void Game::start() {
     status_ = GameStatus::IN_PROGRESS;
-
-    // while (status_ == GameStatus::IN_PROGRESS) {
-    //     auto moveInput = ui_->getPlayerMove();
-    //     auto moveOptional = parseMove(moveInput);
-
-    //     if (!moveOptional.has_value()) {
-    //         ui_->showMessage("Invalid move format. Try again.");
-    //         continue;
-    //     }
-
-    //     Move& move = moveOptional.value(); // Structured binding (C++17+)
-
-    //     if (!handleMove(move)) {
-    //         ui_->showMessage("Invalid move. Try again.");
-    //         continue;
-    //     }
-
-    //     if (move.moveType == MoveType::PROMOTION) {
-    //         ui_->showMessage("Choose promotion piece type:");
-    //         move.promotionPieceType = parsePromotionPiece(ui_->getPlayerMove());
-    //     }
-
-    //     processMove(move);
-    // }
 }
 
 void Game::restart() {
@@ -41,15 +16,16 @@ void Game::restart() {
 }
 
 void Game::executeMove(const Move& move) {
+    auto piece = board_.getPieceAt(move.source);
     board_.movePiece(move.source, move.destination);
-    if (!move.movingPiece->hasMoved()) {
-        move.movingPiece->setHasMoved(true);
+    if (!piece->hasMoved()) {
+        piece->setHasMoved(true);
     }
 
     switch (move.moveType) {
         case MoveType::ENPASSANT: {
             // remove the captured piece from the board
-            auto movingPiece = std::dynamic_pointer_cast<Pawn>(move.movingPiece);
+            auto movingPiece = std::dynamic_pointer_cast<Pawn>(piece);
             int rank = move.destination.rank - movingPiece->getNormalMoveDirections().front();
             board_.setPieceAt({rank, move.destination.file}, nullptr);
             break;
@@ -209,12 +185,13 @@ void Game::setDraw(DrawCause drawCause)
     drawCause_ = drawCause;
 }
 void Game::processMove(Move& move) {
-    movesHistory_.push_back(move);
     executeMove(move);
     if (pendingPromotion_) {
         return;
     }
     updateGameStatus();
+    move.gameStatusAfterMove = status_;
+    movesHistory_.push_back(move);
     switchPlayer();
 }
 

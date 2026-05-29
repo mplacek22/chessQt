@@ -10,7 +10,7 @@ class MoveGenerator
 public:
 
     // All moves ignoring whether they leave the king in check
-    static std::vector<std::shared_ptr<Move>> calculatePseudoLegalMoves(const Board& board, const Coordinate& source, const GameState& state)
+    static std::vector<Move> calculatePseudoLegalMoves(const Board& board, const Coordinate& source, const GameState& state)
     {
         auto piece = board.getPieceAt(source);
         if (!piece) return {};
@@ -21,7 +21,7 @@ public:
     }
 
     // Filters pseudo-legal moves to only those that are fully legal
-    static std::vector<std::shared_ptr<Move>> calculatePossibleMoves(const Board& board, const Coordinate& source, const GameState& state)
+    static std::vector<Move> calculatePossibleMoves(const Board& board, const Coordinate& source, const GameState& state)
     {
         auto piece = board.getPieceAt(source);
         if (!piece) return {};
@@ -31,7 +31,7 @@ public:
             return {};
         }
 
-        std::vector<std::shared_ptr<Move>> pseudo;
+        std::vector<Move> pseudo;
         switch (piece->type()) {
             case PieceType::PAWN:
                 pseudo = calculatePawnMoves(board, source, state);
@@ -44,7 +44,7 @@ public:
                 break;
         }
 
-        std::vector<std::shared_ptr<Move>> legal;
+        std::vector<Move> legal;
         legal.reserve(pseudo.size());
 
         for (const auto& move : pseudo) {
@@ -71,7 +71,7 @@ public:
 
                 auto moves = calculatePseudoLegalMoves(board, source, gameState);
                 for (const auto& move : moves) {
-                    if (move->destination == kingPosition) {
+                    if (move.destination == kingPosition) {
                         checkers.push_back(source);
                         if (checkers.size() == 2) {
                             return checkers;
@@ -114,9 +114,9 @@ public:
     }
 
 private:
-    static std::vector<std::shared_ptr<Move>> calculatePawnMoves(const Board& board, const Coordinate& source, const GameState& state)
+    static std::vector<Move> calculatePawnMoves(const Board& board, const Coordinate& source, const GameState& state)
     {
-        std::vector<std::shared_ptr<Move>> moves;
+        std::vector<Move> moves;
         int moveDirection = state.currentPlayer == Color::WHITE ? 1 : -1;
         int promotionRank = state.currentPlayer == Color::WHITE ? Board::BOARD_SIZE - 1 : 0;
 
@@ -128,11 +128,11 @@ private:
 
         if (board.inBounds(destination) && board.getPieceAt(destination) == nullptr){
 
-            auto move = std::make_shared<Move>(source, destination, state.currentPlayer);
-            move->movingPiece = movingPiece;
+            Move move{source, destination, state.currentPlayer};
+            move.movingPieceType = movingPiece->type();
 
             // promotion
-            move->moveType = rank == promotionRank ? MoveType::PROMOTION : MoveType::NORMAL;
+            move.moveType = rank == promotionRank ? MoveType::PROMOTION : MoveType::NORMAL;
 
             moves.push_back(std::move(move));
         }
@@ -141,9 +141,9 @@ private:
         rank += moveDirection;
         destination = {rank, file};
         if (!movingPiece->hasMoved() && board.inBounds(destination) && board.getPieceAt(destination) == nullptr) {
-            auto move = std::make_shared<Move>(source, destination, movingPiece->color());
-            move->movingPiece = movingPiece;
-            move->moveType = MoveType::PAWN_DOUBLE_NORMAL;
+            Move move{source, destination, movingPiece->color()};
+            move.movingPieceType = movingPiece->type();
+            move.moveType = MoveType::PAWN_DOUBLE_NORMAL;
             moves.push_back(std::move(move));
         }
 
@@ -153,12 +153,12 @@ private:
             file = source.file + f;
             destination = {rank, file};
             if (board.inBounds(destination)){
-                auto move = std::make_shared<Move>(source, destination, state.currentPlayer);
-                move->movingPiece = movingPiece;
+                Move move {source, destination, state.currentPlayer};
+                move.movingPieceType = movingPiece->type();
+                move.isCapture = true;
 
                 if (board.isEnemy(destination, state.currentPlayer)) {
-                    move->moveType = rank == promotionRank ? MoveType::PROMOTION : MoveType::CAPTURE;
-                    move->capturedPiece = board.getPieceAt(destination);
+                    move.moveType = rank == promotionRank ? MoveType::PROMOTION : MoveType::CAPTURE;
                     moves.push_back(std::move(move));
                 }
                 // en passant
@@ -169,8 +169,7 @@ private:
                     // check if the destination of the last move matches the expected captured pawn position
                     bool isCapturableTarget = state.lastMove->destination.file == destination.file;
                     if (board.getPieceAt(destination) == nullptr && next && isCapturableTarget) {
-                        move->moveType = MoveType::ENPASSANT;
-                        move->capturedPiece = board.getPieceAt({source.rank, file});
+                        move.moveType = MoveType::ENPASSANT;
                         moves.push_back(std::move(move));
                     }
                 }
@@ -180,26 +179,26 @@ private:
         return moves;
     }
 
-    static std::vector<std::shared_ptr<Move>> calculateKingMoves(const Board& board, const Coordinate& source, const GameState& state)
+    static std::vector<Move> calculateKingMoves(const Board& board, const Coordinate& source, const GameState& state)
     {
         auto moves = calculateRegularMoves(board, source);
         auto dangerSquares = computeKingDangerSquares(board, source, state);
 
         // Filter out moves to king danger squares
         std::erase_if(moves, [&](const auto& m) {
-            return std::ranges::find(dangerSquares, m->destination) != dangerSquares.end();
+            return std::ranges::find(dangerSquares, m.destination) != dangerSquares.end();
         });
 
         if(canCastleKingSide(board, state)) {
-            auto move = std::make_shared<Move>(source, Coordinate{source.rank, 6}, state.currentPlayer);
-            move->moveType = MoveType::CASTLE_KINGSIDE;
-            move->movingPiece = board.getPieceAt(source);
+            Move move {source, Coordinate{source.rank, 6}, state.currentPlayer};
+            move.moveType = MoveType::CASTLE_KINGSIDE;
+            move.movingPieceType = board.getPieceAt(source)->type();
             moves.push_back(move);
         }
         if(canCastleQueenSide(board, state)) {
-            auto move = std::make_shared<Move>(source, Coordinate{source.rank, 2}, state.currentPlayer);
-            move->moveType = MoveType::CASTLE_QUEENSIDE;
-            move->movingPiece = board.getPieceAt(source);
+            Move move {source, Coordinate{source.rank, 2}, state.currentPlayer};
+            move.moveType = MoveType::CASTLE_QUEENSIDE;
+            move.movingPieceType = board.getPieceAt(source)->type();
             moves.push_back(move);
         }
 
@@ -218,7 +217,7 @@ private:
                 const auto piece = boardWithoutKing.at({r, f});
                 if (piece && piece->color() != color) {
                     for (const auto&  m : MoveGenerator::calculatePseudoLegalMoves(board, {r, f}, gameState)) {
-                        danger.push_back(m->destination);
+                        danger.push_back(m.destination);
                     }
                 }
             }
@@ -276,7 +275,7 @@ private:
                 auto moves = calculatePseudoLegalMoves(board, source, nextMoveState);
 
                 for (const auto& move : moves) {
-                    if (move->destination == target && move->capturedPiece)
+                    if (move.destination == target && move.isCapture)
                         return true;
                 }
             }
@@ -284,11 +283,11 @@ private:
         return false;
     }
 
-    static std::vector<std::shared_ptr<Move>> calculateRegularMoves(const Board& board, const Coordinate& source) {
+    static std::vector<Move> calculateRegularMoves(const Board& board, const Coordinate& source) {
         std::shared_ptr<Piece> piece = board.getPieceAt(source);
         if (!piece) return {};
 
-        std::vector<std::shared_ptr<Move>> moves;
+        std::vector<Move> moves;
 
         for (const auto& dir : piece->getMoveDirections()) {
             int rank = source.rank;
@@ -304,15 +303,15 @@ private:
 
                 if (board.isFriendly(destination, piece->color())) break;
 
-                auto move = std::make_shared<Move>(source, destination, piece->color());
-                move->movingPiece = piece;
+                Move move {source, destination, piece->color()};
+                move.movingPieceType = piece->type();
                 const auto capturedPiece = board.getPieceAt(destination);
                 if (capturedPiece) {
-                    move->moveType = MoveType::CAPTURE;
-                    move->capturedPiece = capturedPiece;
+                    move.moveType = MoveType::CAPTURE;
+                    move.isCapture = true;
                 }
                 else {
-                    move->moveType = MoveType::NORMAL;
+                    move.moveType = MoveType::NORMAL;
                 }
                 moves.push_back(move);
 
@@ -324,11 +323,11 @@ private:
         return moves;
     }
 
-    static bool leavesKingInCheck(const std::shared_ptr<Move> move, const Board& board, const GameState& state)
+    static bool leavesKingInCheck(const Move& move, const Board& board, const GameState& state)
     {
         Board copy = board;
-        auto movingPiece = copy.getPieceAt(move->source);
-        copy.movePiece(move->source, move->destination);
+        auto movingPiece = copy.getPieceAt(move.source);
+        copy.movePiece(move.source, move.destination);
 
         //todo: handle en passant
         auto kingSquare = copy.findKing(movingPiece->color());

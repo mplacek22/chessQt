@@ -27,6 +27,8 @@ char fileSAN(int file);
 Move resolveCastle(bool isKingSide, const Board& board, const GameState& gameState);
 
 PieceType charToPieceType(char c);
+
+char pieceTypeToChar(PieceType pieceType);
 };
 
 #endif // ALGEBRAICNOTATIONTRANSLATOR_H

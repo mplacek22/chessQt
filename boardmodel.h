@@ -36,7 +36,7 @@ private:
     int selectedRow_ = -1;
     int selectedCol_ = -1;
     QList<QPair<int,int>> highlightedSquares_;
-    std::vector<std::shared_ptr<Move>> activeMoves_;
+    std::vector<Move> activeMoves_;
 
     bool isHighlighted(int row, int col) const;
     void selectSourceSquare(int rank, int file);

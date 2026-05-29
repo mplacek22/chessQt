@@ -51,8 +51,8 @@ qt_add_qml_module(appchess
         qml/PieceButton.qml
         qml/GameOverDialog.qml
     SOURCES
-        chessmodel.h      chessmodel.cpp
-        chessboard.h      chessboard.cpp
+
+
         boardmodel.h      boardmodel.cpp
         gamecontroller.h  gamecontroller.cpp
         chessEnums.h
