@@ -1,41 +1,7 @@
-// import QtQuick 2.15
-// import QtQuick.Controls 2.15
-
-// ApplicationWindow {
-//     id: root
-//     visible: true
-//     width: 800
-//     height: 600
-//     title: "Chess"
-
-//     Row {
-//         anchors.fill: parent
-
-//         Board {
-//             id: board
-//             width: parent.height
-//             height: parent.height
-
-//             onSquareClicked: function(file, rank) {
-//                 chessController.onSquareClicked(file, rank)
-//             }
-//         }
-
-//         MoveList {
-//             id: moveList
-//             width: parent.width - board.width
-//             height: parent.height
-
-//             model: chessController.moveModel
-//         }
-//     }
-// }
-// Main.qml
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import Chess 1.0
 
 ApplicationWindow {
     id: root
@@ -45,7 +11,6 @@ ApplicationWindow {
     minimumWidth: 600
     visible: true
     title: "Chess"
-    // color: "#2b2b2b"
 
     Component.onCompleted: gameController.startGame()
 

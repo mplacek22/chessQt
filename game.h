@@ -49,6 +49,8 @@ public:
 
     bool isGameOngoing() const;
 
+    std::vector<Move> calculatePossibleMovesFromCoord(const Coordinate& source);
+
 private:
     Color currentPlayer_ = Color::WHITE;
     Board board_ = Board();

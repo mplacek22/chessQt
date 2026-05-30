@@ -9,7 +9,6 @@ public:
     explicit Knight(Color color)
         : Piece(color) {
         type_ = PieceType::KNIGHT;
-        name_ = 'N';
     }
 
     // std::vector<std::shared_ptr<Move> > calculatePossibleMoves(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board, const Coordinate &source) override;

@@ -27,7 +27,7 @@ add_library(chess_core STATIC
     drawCause.h
     move_generator.h  move_generator.cpp
     IGameObserver.h
-    algebraicNotationTranslator.h  algebraicNotationTranslator.cpp
+    san.h  san.cpp
     InvalidSANException.h
 )
 target_include_directories(chess_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -37,47 +37,47 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 qt_standard_project_setup(REQUIRES 6.10)
 
 qt_add_executable(appchess
-    main.cpp
+   main.cpp
 )
 
 qt_add_qml_module(appchess
-    URI chess
-    QML_FILES
-        qml/Main.qml
-        qml/Board.qml
-        qml/MoveList.qml
-        qml/Piece.qml
-        qml/PromotionDialog.qml
-        qml/PieceButton.qml
-        qml/GameOverDialog.qml
-    SOURCES
+   URI chess
+   QML_FILES
+       qml/Main.qml
+       qml/Board.qml
+       qml/MoveList.qml
+       qml/Piece.qml
+       qml/PromotionDialog.qml
+       qml/PieceButton.qml
+       qml/GameOverDialog.qml
+   SOURCES
 
 
-        boardmodel.h      boardmodel.cpp
-        gamecontroller.h  gamecontroller.cpp
-        chessEnums.h
-    RESOURCES
-        qml/pieces/w_bishop.svg
-        qml/pieces/w_king.svg
-        qml/pieces/w_knight.svg
-        qml/pieces/w_pawn.svg
-        qml/pieces/w_queen.svg
-        qml/pieces/w_rook.svg
-        qml/pieces/b_bishop.svg
-        qml/pieces/b_king.svg
-        qml/pieces/b_knight.svg
-        qml/pieces/b_pawn.svg
-        qml/pieces/b_queen.svg
-        qml/pieces/b_rook.svg
+       boardmodel.h      boardmodel.cpp
+       gamecontroller.h  gamecontroller.cpp
+       chessEnums.h
+   RESOURCES
+       qml/pieces/w_bishop.svg
+       qml/pieces/w_king.svg
+       qml/pieces/w_knight.svg
+       qml/pieces/w_pawn.svg
+       qml/pieces/w_queen.svg
+       qml/pieces/w_rook.svg
+       qml/pieces/b_bishop.svg
+       qml/pieces/b_king.svg
+       qml/pieces/b_knight.svg
+       qml/pieces/b_pawn.svg
+       qml/pieces/b_queen.svg
+       qml/pieces/b_rook.svg
 )
 
 target_link_libraries(appchess PRIVATE chess_core Qt6::Quick)
 
 set_target_properties(appchess PROPERTIES
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
+   MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+   MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+   MACOSX_BUNDLE TRUE
+   WIN32_EXECUTABLE TRUE
 )
 
 # ─── Console target ───────────────────────────────────────────────────────────
@@ -89,8 +89,10 @@ add_executable(appchess_console
 target_link_libraries(appchess_console PRIVATE chess_core)
 
 # ─── Install ──────────────────────────────────────────────────────────────────
-install(TARGETS appchess appchess_console
+install(TARGETS appchess_console
     BUNDLE  DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+add_custom_target(docs SOURCES Doxyfile)

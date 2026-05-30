@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Move.h"
 #include "Piece.h"
 
 
@@ -19,7 +18,7 @@ public:
         return color_ == Color::WHITE ? DIRECTIONS_WHITE : DIRECTIONS_BLACK;
     }
 
-    const std::span<const std::array<int, 2>> getCaptureMoveDirections() const override {
+    std::span<const std::array<int, 2>> getCaptureMoveDirections() const override {
         return color_ == Color::WHITE ? CAPTURE_DIRECTIONS_WHITE : CAPTURE_DIRECTIONS_BLACK;
     }
 

@@ -11,110 +11,110 @@ Board::Board() {
 }
 
 void Board::initialize() {
-    // board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));
-    // board_.set(0, 1, std::make_shared<Knight>(Color::WHITE));
-    // board_.set(0, 2, std::make_shared<Bishop>(Color::WHITE));
-    // board_.set(0, 3, std::make_shared<Queen>(Color::WHITE));
-    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));
-    // board_.set(0, 5, std::make_shared<Bishop>(Color::WHITE));
-    // board_.set(0, 6, std::make_shared<Knight>(Color::WHITE));
-    // board_.set(0, 7, std::make_shared<Rook>(Color::WHITE));
+    board_.set(0, 0, std::make_unique<Rook>(Color::WHITE));
+    board_.set(0, 1, std::make_unique<Knight>(Color::WHITE));
+    board_.set(0, 2, std::make_unique<Bishop>(Color::WHITE));
+    board_.set(0, 3, std::make_unique<Queen>(Color::WHITE));
+    board_.set(0, 4, std::make_unique<King>(Color::WHITE));
+    board_.set(0, 5, std::make_unique<Bishop>(Color::WHITE));
+    board_.set(0, 6, std::make_unique<Knight>(Color::WHITE));
+    board_.set(0, 7, std::make_unique<Rook>(Color::WHITE));
 
-    // for (int i = 0; i < 8; ++i) {
-    //     board_.set(1, i, std::make_shared<Pawn>(Color::WHITE));
-    //     board_.set(6, i, std::make_shared<Pawn>(Color::BLACK));
-    // }
+    for (int i = 0; i < 8; ++i) {
+        board_.set(1, i, std::make_unique<Pawn>(Color::WHITE));
+        board_.set(6, i, std::make_unique<Pawn>(Color::BLACK));
+    }
 
-    // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));
-    // board_.set(7, 1, std::make_shared<Knight>(Color::BLACK));
-    // board_.set(7, 2, std::make_shared<Bishop>(Color::BLACK));
-    // board_.set(7, 3, std::make_shared<Queen>(Color::BLACK));
-    // board_.set(7, 4, std::make_shared<King>(Color::BLACK));
-    // board_.set(7, 5, std::make_shared<Bishop>(Color::BLACK));
-    // board_.set(7, 6, std::make_shared<Knight>(Color::BLACK));
-    // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));
+    board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));
+    board_.set(7, 1, std::make_unique<Knight>(Color::BLACK));
+    board_.set(7, 2, std::make_unique<Bishop>(Color::BLACK));
+    board_.set(7, 3, std::make_unique<Queen>(Color::BLACK));
+    board_.set(7, 4, std::make_unique<King>(Color::BLACK));
+    board_.set(7, 5, std::make_unique<Bishop>(Color::BLACK));
+    board_.set(7, 6, std::make_unique<Knight>(Color::BLACK));
+    board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));
 
     // // double check
     // // White pieces
-    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));
-    // board_.set(4, 4, std::make_shared<Rook>(Color::WHITE));   // e5 – checks Black King on e8 along e-file
-    // board_.set(4, 1, std::make_shared<Bishop>(Color::WHITE)); // b5 – checks Black King on e8 via diagonal
+    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));
+    // board_.set(4, 4, std::make_unique<Rook>(Color::WHITE));   // e5 – checks Black King on e8 along e-file
+    // board_.set(4, 1, std::make_unique<Bishop>(Color::WHITE)); // b5 – checks Black King on e8 via diagonal
 
     // // Black pieces
-    // board_.set(7, 4, std::make_shared<King>(Color::BLACK));   // e8 – in double check
-    // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));   // a8
-    // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));   // h8
+    // board_.set(7, 4, std::make_unique<King>(Color::BLACK));   // e8 – in double check
+    // board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));   // a8
+    // board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));   // h8
 
     // // almost check
     // // White pieces
-    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));
-    // board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));    // Will give check on e-file
-    // board_.set(2, 6, std::make_shared<Bishop>(Color::WHITE));  // Will give check on diagonal
+    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));
+    // board_.set(0, 0, std::make_unique<Rook>(Color::WHITE));    // Will give check on e-file
+    // board_.set(2, 6, std::make_unique<Bishop>(Color::WHITE));  // Will give check on diagonal
 
     // // Black pieces
-    // board_.set(7, 4, std::make_shared<King>(Color::BLACK));    // Black King on e8
-    // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));    // Blocker removed to expose check
-    // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));
+    // board_.set(7, 4, std::make_unique<King>(Color::BLACK));    // Black King on e8
+    // board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));    // Blocker removed to expose check
+    // board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));
 
     // // pinned pieces
     // // White pieces
-    // // board_.set(0, 4, std::make_shared<King>(Color::WHITE));     // e1
-    // // board_.set(1, 4, std::make_shared<Knight>(Color::WHITE));   // e2 – pinned piece
+    // // board_.set(0, 4, std::make_unique<King>(Color::WHITE));     // e1
+    // // board_.set(1, 4, std::make_unique<Knight>(Color::WHITE));   // e2 – pinned piece
 
     // // Black pieces
-    // // board_.set(7, 4, std::make_shared<Rook>(Color::BLACK));     // e8 – creates the pin
-    // // board_.set(6, 0, std::make_shared<King>(Color::BLACK));     // a7 – arbitrary safe placement
+    // // board_.set(7, 4, std::make_unique<Rook>(Color::BLACK));     // e8 – creates the pin
+    // // board_.set(6, 0, std::make_unique<King>(Color::BLACK));     // a7 – arbitrary safe placement
 
     // // pinned pieces 2
     // // White pieces
-    // // board_.set(0, 4, std::make_shared<King>(Color::WHITE));     // e1
-    // // board_.set(1, 4, std::make_shared<Bishop>(Color::WHITE));   // e2 – pinned piece
+    // // board_.set(0, 4, std::make_unique<King>(Color::WHITE));     // e1
+    // // board_.set(1, 4, std::make_unique<Bishop>(Color::WHITE));   // e2 – pinned piece
 
     // // Black pieces
-    // // board_.set(7, 4, std::make_shared<Rook>(Color::BLACK));     // e8 – creates the pin
-    // // board_.set(6, 0, std::make_shared<King>(Color::BLACK));     // a7 – arbitrary safe placement
+    // // board_.set(7, 4, std::make_unique<Rook>(Color::BLACK));     // e8 – creates the pin
+    // // board_.set(6, 0, std::make_unique<King>(Color::BLACK));     // a7 – arbitrary safe placement
 
     // // almost checkmate
     // // White king
-    board_.set(5, 5, std::make_shared<King>(Color::WHITE));   // f6
+    // board_.set(5, 5, std::make_unique<King>(Color::WHITE));   // f6
 
-    // White queen
-    board_.set(5, 6, std::make_shared<Queen>(Color::WHITE));  // g6
+    // // White queen
+    // board_.set(5, 6, std::make_unique<Queen>(Color::WHITE));  // g6
 
-    // Black king
-    board_.set(7, 7, std::make_shared<King>(Color::BLACK));   // h8
+    // // Black king
+    // board_.set(7, 7, std::make_unique<King>(Color::BLACK));   // h8
 
     // // castling
     // // --- WHITE (rank 0) ---
-    // board_.set(0, 0, std::make_shared<Rook>(Color::WHITE));     // a1 - unmoved, queen-side rook
-    // board_.set(0, 1, std::make_shared<Knight>(Color::WHITE));   // b1 - BLOCKS queen-side castle
+    // board_.set(0, 0, std::make_unique<Rook>(Color::WHITE));     // a1 - unmoved, queen-side rook
+    // board_.set(0, 1, std::make_unique<Knight>(Color::WHITE));   // b1 - BLOCKS queen-side castle
     // // c1, d1 empty
-    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));     // e1 - unmoved
+    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));     // e1 - unmoved
     // // f1, g1 empty
-    // board_.set(0, 7, std::make_shared<Rook>(Color::WHITE));     // h1 - unmoved, king-side rook
+    // board_.set(0, 7, std::make_unique<Rook>(Color::WHITE));     // h1 - unmoved, king-side rook
 
     // // --- BLACK (rank 7) ---
-    // board_.set(7, 0, std::make_shared<Rook>(Color::BLACK));     // a8 - unmoved, queen-side rook
+    // board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));     // a8 - unmoved, queen-side rook
     // // b8, c8, d8 empty
-    // board_.set(7, 4, std::make_shared<King>(Color::BLACK));     // e8 - unmoved
-    // board_.set(7, 5, std::make_shared<Bishop>(Color::BLACK));   // f8 - BLOCKS king-side castle
-    // board_.set(7, 7, std::make_shared<Rook>(Color::BLACK));     // h8 - unmoved
+    // board_.set(7, 4, std::make_unique<King>(Color::BLACK));     // e8 - unmoved
+    // board_.set(7, 5, std::make_unique<Bishop>(Color::BLACK));   // f8 - BLOCKS king-side castle
+    // board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));     // h8 - unmoved
 
     // // --- A white rook on e5 gives check to black king on e8, preventing king-side castle ---
-    // board_.set(4, 4, std::make_shared<Rook>(Color::WHITE));     // e5 - attacks e8, puts black in SINGLE_CHECK
+    // board_.set(4, 4, std::make_unique<Rook>(Color::WHITE));     // e5 - attacks e8, puts black in SINGLE_CHECK
 
 
     // // insufficient material
-    // board_.set(0, 4, std::make_shared<King>(Color::WHITE));   // e1
-    // board_.set(1, 7, std::make_shared<Bishop>(Color::WHITE)); // h2 (light square)
+    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));   // e1
+    // board_.set(1, 7, std::make_unique<Bishop>(Color::WHITE)); // h2 (light square)
 
-    // board_.set(7, 7, std::make_shared<King>(Color::BLACK));   // h8
-    // board_.set(4, 4, std::make_shared<Bishop>(Color::BLACK)); // e5 (light square) — capturable by Bd4
+    // board_.set(7, 7, std::make_unique<King>(Color::BLACK));   // h8
+    // board_.set(4, 4, std::make_unique<Bishop>(Color::BLACK)); // e5 (light square) — capturable by Bd4
 
 }
 
 void Board::setPieceAt(const Coordinate& coordinate, std::shared_ptr<Piece> piece) {
-    board_.set(coordinate, piece);
+    board_.set(coordinate, std::move(piece));
 }
 
 void Board::movePiece(const Coordinate& source, const Coordinate& destination) {

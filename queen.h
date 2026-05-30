@@ -8,7 +8,6 @@ public:
     explicit Queen(Color color)
         : Piece(color) {
         type_ = PieceType::QUEEN;
-        name_ = 'Q';
     }
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {

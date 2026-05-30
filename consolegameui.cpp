@@ -1,7 +1,7 @@
 #include "consolegameui.h"
 #include <iostream>
 #include "InvalidSANException.h"
-#include "algebraicNotationTranslator.h"
+#include "san.h"
 
 void ConsoleGameUI::run()
 {
@@ -16,7 +16,7 @@ void ConsoleGameUI::run()
             break;
 
         try {
-            Move move = AlgebraicNotationTranslator::fromSAN(san.value(), game_.board(), game_.gameState());
+            Move move = san::fromSAN(san.value(), game_.board(), game_.gameState());
             game_.processMove(move);
         }
         catch (const InvalidSanException& e) {

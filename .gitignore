@@ -82,3 +82,11 @@ CMakeLists.txt.user*
 .uic/
 /build*/
 /.qtcreator/
+
+.idea/
+
+cmake-build-debug/
+
+html/
+
+latex/

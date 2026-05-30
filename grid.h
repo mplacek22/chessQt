@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 
-template<typename T, int Rows = 8, int Cols = 8>
+template<typename T, std::size_t Rows  = 8, std::size_t Cols = 8>
 class Grid
 {
 public:

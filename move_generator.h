@@ -4,6 +4,7 @@
 #include "board.h"
 #include "game_state.h"
 #include <algorithm>
+#include <vector>
 
 class MoveGenerator
 {

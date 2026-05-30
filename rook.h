@@ -9,7 +9,6 @@ public:
     explicit Rook(const Color color)
         : Piece(color) {
         type_ = PieceType::ROOK;
-        name_ = 'R';
     }
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {

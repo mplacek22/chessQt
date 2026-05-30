@@ -1,17 +1,14 @@
-//
-// Created by User on 04.03.2025.
-//
+#pragma once
 
-#ifndef BOARD_H
-#define BOARD_H
 #include "Coordinate.h"
 #include <memory>
-#include <array>
-#include <vector>
 #include "Grid.h"
 #include "Piece.h"
 
-
+/**
+ * @brief class representing chess board.
+ *
+ */
 class Board {
 public:
     static constexpr int BOARD_SIZE = 8;
@@ -20,8 +17,11 @@ public:
 
     ~Board() = default;
 
-    void initialize();
-
+    /**
+     *
+     * @param coordinate
+     * @return
+     */
     [[nodiscard]] std::shared_ptr<Piece> getPieceAt(const Coordinate &coordinate) const;
 
     void setPieceAt(const Coordinate &coordinate, std::shared_ptr<Piece> piece);
@@ -30,24 +30,25 @@ public:
 
     void restart();
 
-    Grid<std::shared_ptr<Piece>, BOARD_SIZE, BOARD_SIZE> board() const { return board_; };
+    [[nodiscard]] const Grid<std::shared_ptr<Piece>>& board() const { return board_; }
 
-    Coordinate findKing(Color color) const;
+    [[nodiscard]] Coordinate findKing(Color color) const;
 
     bool isFriendly(Coordinate& coord, Color color) const;
 
     bool isEnemy(Coordinate& coord, Color color) const;
 
-    bool inBounds(const Coordinate& coord) const;
+    [[nodiscard]] bool inBounds(const Coordinate& coord) const;
 
-    bool isPathClear(const Coordinate& source, const Coordinate& destination) const;
+    [[nodiscard]] bool isPathClear(const Coordinate& source, const Coordinate& destination) const;
 
-    bool isLightSquare(int rank, int file) const;
+    [[nodiscard]] bool isLightSquare(int rank, int file) const;
 
 private:
-    Grid<std::shared_ptr<Piece>, BOARD_SIZE, BOARD_SIZE> board_;
+    Grid<std::shared_ptr<Piece>> board_;
+
     void clear();
+
+    void initialize();
+
 };
-
-
-#endif //BOARD_H

@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import Chess 1.0
 
 Item {
     id: board
@@ -65,12 +64,7 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    const file = index % 8
-                    const rank = Math.floor(index / 8)
-                    board.model.selectSquare(rank, file)
-                    board.squareClicked(rank, file)
-                }
+                onClicked: gameController.selectSquare(index)
             }
         }
     }

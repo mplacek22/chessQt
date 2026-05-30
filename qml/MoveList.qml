@@ -75,8 +75,8 @@ Rectangle {
                     Behavior on opacity { NumberAnimation { duration: 200 } }
                 }
 
-                readonly property int colNum:   36   // must match header "#" width
-                readonly property int colLeft:  8    // left margin
+                readonly property int colNum: 36
+                readonly property int colLeft: 8
                 readonly property int colWhite: Math.floor((width - colNum - colLeft) / 2)
 
                 Text {
@@ -95,7 +95,7 @@ Rectangle {
                     x: colLeft + colNum + 8
                     width: colWhite - 8
                     anchors.verticalCenter: parent.verticalCenter
-                    text: modelData.split("  ")[0].replace(/^\d+\.\s*/, "")
+                    text: modelData["white"] ?? ""
                     color: palette.text
                     font.pixelSize: 13
                     font.family: "Monospace"
@@ -107,11 +107,11 @@ Rectangle {
                     x: colLeft + colNum + colWhite
                     width: parent.width - x - colLeft
                     anchors.verticalCenter: parent.verticalCenter
-                    text: modelData.split("  ")[1] ?? ""
+                    text: modelData["black"] ?? ""
                     color: palette.text
                     font.pixelSize: 13
                     font.family: "Monospace"
-                    font.bold: index === listView.count - 1 && modelData.split("  ").length > 1
+                    font.bold: index === listView.count - 1 && modelData["black"] !== ""
                 }
             }
         }

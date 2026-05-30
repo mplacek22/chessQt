@@ -7,7 +7,6 @@ public:
     explicit King(Color color)
         : Piece(color) {
         type_ = PieceType::KING;
-        name_ = 'K';
     }
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {

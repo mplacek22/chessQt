@@ -218,3 +218,8 @@ bool Game::isGameOngoing() const
 {
     return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(status_));
 }
+
+std::vector<Move> Game::calculatePossibleMovesFromCoord(const Coordinate &source)
+{
+    return MoveGenerator::calculatePossibleMoves(board_, source, gameState());
+}

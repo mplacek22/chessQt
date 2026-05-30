@@ -8,7 +8,6 @@ public:
     explicit Bishop(const Color color)
         : Piece(color) {
         type_ = PieceType::BISHOP;
-        name_ = 'B';
     }
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {
