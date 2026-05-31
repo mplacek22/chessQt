@@ -9,7 +9,7 @@
  * @brief class representing chess board.
  *
  */
-class Board {
+class Board : public Grid<std::unique_ptr<Piece>, 8, 8> {
 public:
     static constexpr int BOARD_SIZE = 8;
 
@@ -17,20 +17,20 @@ public:
 
     ~Board() = default;
 
+    Board(Board&&) = default;
+    Board& operator=(Board&&) = default;
     /**
      *
      * @param coordinate
      * @return
      */
-    [[nodiscard]] std::shared_ptr<Piece> getPieceAt(const Coordinate &coordinate) const;
+    [[nodiscard]] Piece* at(const Coordinate &coordinate) const;
 
-    void setPieceAt(const Coordinate &coordinate, std::shared_ptr<Piece> piece);
+    void set(const Coordinate &coordinate, std::unique_ptr<Piece> piece);
 
-    void movePiece(const Coordinate &source, const Coordinate &destination);
+    void move(const Coordinate &source, const Coordinate &destination);
 
     void restart();
-
-    [[nodiscard]] const Grid<std::shared_ptr<Piece>>& board() const { return board_; }
 
     [[nodiscard]] Coordinate findKing(Color color) const;
 
@@ -44,11 +44,9 @@ public:
 
     [[nodiscard]] bool isLightSquare(int rank, int file) const;
 
+    [[nodiscard]] Board clone() const;
+
 private:
-    Grid<std::shared_ptr<Piece>> board_;
-
-    void clear();
-
     void initialize();
 
 };

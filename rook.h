@@ -7,13 +7,15 @@
 class Rook final : public Piece {
 public:
     explicit Rook(const Color color)
-        : Piece(color) {
-        type_ = PieceType::ROOK;
-    }
+        : Piece(color, PieceType::ROOK) {}
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {
         return MOVE_DIRECTIONS;
     }
+
+    std::unique_ptr<Piece> clone() const override {
+        return std::make_unique<Rook>(*this);
+    };
 
     bool isSliding() const override { return true; }
 

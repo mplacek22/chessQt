@@ -16,8 +16,8 @@ void Game::restart() {
 }
 
 void Game::executeMove(const Move& move) {
-    auto piece = board_.getPieceAt(move.source);
-    board_.movePiece(move.source, move.destination);
+    auto piece = board_.at(move.source);
+    board_.move(move.source, move.destination);
     if (!piece->hasMoved()) {
         piece->setHasMoved(true);
     }
@@ -25,9 +25,9 @@ void Game::executeMove(const Move& move) {
     switch (move.moveType) {
         case MoveType::ENPASSANT: {
             // remove the captured piece from the board
-            auto movingPiece = std::dynamic_pointer_cast<Pawn>(piece);
+            auto movingPiece = dynamic_cast<Pawn*>(piece);
             int rank = move.destination.rank - movingPiece->getNormalMoveDirections().front();
-            board_.setPieceAt({rank, move.destination.file}, nullptr);
+            board_.set({rank, move.destination.file}, nullptr);
             break;
         }
         case MoveType::PROMOTION: {
@@ -42,16 +42,16 @@ void Game::executeMove(const Move& move) {
             int rank = move.destination.rank;
             Coordinate rookSource = {rank, 7};
             Coordinate rookDestination = {rank, 5}; //f1 (white), f8 (black)
-            board_.movePiece(rookSource, rookDestination);
-            board_.getPieceAt(rookDestination)->setHasMoved(true);
+            board_.move(rookSource, rookDestination);
+            board_.at(rookDestination)->setHasMoved(true);
             break;
         }
         case MoveType::CASTLE_QUEENSIDE: {
             int rank = move.destination.rank;
             Coordinate rookSource = {rank, 0};
             Coordinate rookDestination = {rank, 3}; //d1 (white), d8 (black)
-            board_.movePiece(rookSource, rookDestination);
-            board_.getPieceAt(rookDestination)->setHasMoved(true);
+            board_.move(rookSource, rookDestination);
+            board_.at(rookDestination)->setHasMoved(true);
             break;
         }
         default:
@@ -133,7 +133,7 @@ bool Game::isInsufficientMaterial() const
 
     for (int r = 0; r < Board::BOARD_SIZE; ++r) {
         for (int f = 0; f < Board::BOARD_SIZE; ++f) {
-            auto piece = board_.getPieceAt({r, f});
+            auto piece = board_.at({r, f});
             if (!piece) continue;
 
             auto& counts = (piece->color() == Color::WHITE) ? white : black;
@@ -200,7 +200,7 @@ void Game::promotePawn(PieceType type)
     if (!promotionSquare_ || !pendingPromotion_) {
         return;
     }
-    board_.setPieceAt(promotionSquare_.value(), Piece::create(currentPlayer_, type));
+    board_.set(promotionSquare_.value(), Piece::create(currentPlayer_, type));
     pendingPromotion_ = false;
     promotionSquare_ = std::nullopt;
     Move& lastMove = movesHistory_.back();

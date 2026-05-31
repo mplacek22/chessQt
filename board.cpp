@@ -11,118 +11,121 @@ Board::Board() {
 }
 
 void Board::initialize() {
-    board_.set(0, 0, std::make_unique<Rook>(Color::WHITE));
-    board_.set(0, 1, std::make_unique<Knight>(Color::WHITE));
-    board_.set(0, 2, std::make_unique<Bishop>(Color::WHITE));
-    board_.set(0, 3, std::make_unique<Queen>(Color::WHITE));
-    board_.set(0, 4, std::make_unique<King>(Color::WHITE));
-    board_.set(0, 5, std::make_unique<Bishop>(Color::WHITE));
-    board_.set(0, 6, std::make_unique<Knight>(Color::WHITE));
-    board_.set(0, 7, std::make_unique<Rook>(Color::WHITE));
+    // Grid::set(0, 0, std::make_unique<Rook>(Color::WHITE));
+    // Grid::set(0, 1, std::make_unique<Knight>(Color::WHITE));
+    // Grid::set(0, 2, std::make_unique<Bishop>(Color::WHITE));
+    // Grid::set(0, 3, std::make_unique<Queen>(Color::WHITE));
+    // Grid::set(0, 4, std::make_unique<King>(Color::WHITE));
+    // Grid::set(0, 5, std::make_unique<Bishop>(Color::WHITE));
+    // Grid::set(0, 6, std::make_unique<Knight>(Color::WHITE));
+    // Grid::set(0, 7, std::make_unique<Rook>(Color::WHITE));
 
-    for (int i = 0; i < 8; ++i) {
-        board_.set(1, i, std::make_unique<Pawn>(Color::WHITE));
-        board_.set(6, i, std::make_unique<Pawn>(Color::BLACK));
-    }
+    // for (int i = 0; i < 8; ++i) {
+    //     Grid::set(1, i, std::make_unique<Pawn>(Color::WHITE));
+    //     Grid::set(6, i, std::make_unique<Pawn>(Color::BLACK));
+    // }
 
-    board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));
-    board_.set(7, 1, std::make_unique<Knight>(Color::BLACK));
-    board_.set(7, 2, std::make_unique<Bishop>(Color::BLACK));
-    board_.set(7, 3, std::make_unique<Queen>(Color::BLACK));
-    board_.set(7, 4, std::make_unique<King>(Color::BLACK));
-    board_.set(7, 5, std::make_unique<Bishop>(Color::BLACK));
-    board_.set(7, 6, std::make_unique<Knight>(Color::BLACK));
-    board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));
+    // Grid::set(7, 0, std::make_unique<Rook>(Color::BLACK));
+    // Grid::set(7, 1, std::make_unique<Knight>(Color::BLACK));
+    // Grid::set(7, 2, std::make_unique<Bishop>(Color::BLACK));
+    // Grid::set(7, 3, std::make_unique<Queen>(Color::BLACK));
+    // Grid::set(7, 4, std::make_unique<King>(Color::BLACK));
+    // Grid::set(7, 5, std::make_unique<Bishop>(Color::BLACK));
+    // Grid::set(7, 6, std::make_unique<Knight>(Color::BLACK));
+    // Grid::set(7, 7, std::make_unique<Rook>(Color::BLACK));
 
     // // double check
     // // White pieces
-    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));
-    // board_.set(4, 4, std::make_unique<Rook>(Color::WHITE));   // e5 – checks Black King on e8 along e-file
-    // board_.set(4, 1, std::make_unique<Bishop>(Color::WHITE)); // b5 – checks Black King on e8 via diagonal
+    // Grid::set(0, 4, std::make_unique<King>(Color::WHITE));
+    // Grid::set(4, 4, std::make_unique<Rook>(Color::WHITE));   // e5 – checks Black King on e8 along e-file
+    // Grid::set(4, 1, std::make_unique<Bishop>(Color::WHITE)); // b5 – checks Black King on e8 via diagonal
 
     // // Black pieces
-    // board_.set(7, 4, std::make_unique<King>(Color::BLACK));   // e8 – in double check
-    // board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));   // a8
-    // board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));   // h8
+    // Grid::set(7, 4, std::make_unique<King>(Color::BLACK));   // e8 – in double check
+    // Grid::set(7, 0, std::make_unique<Rook>(Color::BLACK));   // a8
+    // Grid::set(7, 7, std::make_unique<Rook>(Color::BLACK));   // h8
 
-    // // almost check
-    // // White pieces
-    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));
-    // board_.set(0, 0, std::make_unique<Rook>(Color::WHITE));    // Will give check on e-file
-    // board_.set(2, 6, std::make_unique<Bishop>(Color::WHITE));  // Will give check on diagonal
+    // almost check
+    // White pieces
+    Grid::set(0, 4, std::make_unique<King>(Color::WHITE));
+    Grid::set(0, 0, std::make_unique<Rook>(Color::WHITE));    // Will give check on e-file
+    Grid::set(2, 6, std::make_unique<Bishop>(Color::WHITE));  // Will give check on diagonal
 
-    // // Black pieces
-    // board_.set(7, 4, std::make_unique<King>(Color::BLACK));    // Black King on e8
-    // board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));    // Blocker removed to expose check
-    // board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));
+    // Black pieces
+    Grid::set(7, 4, std::make_unique<King>(Color::BLACK));    // Black King on e8
+    Grid::set(7, 0, std::make_unique<Rook>(Color::BLACK));    // Blocker removed to expose check
+    Grid::set(7, 7, std::make_unique<Rook>(Color::BLACK));
 
     // // pinned pieces
     // // White pieces
-    // // board_.set(0, 4, std::make_unique<King>(Color::WHITE));     // e1
-    // // board_.set(1, 4, std::make_unique<Knight>(Color::WHITE));   // e2 – pinned piece
+    // // Grid::set(0, 4, std::make_unique<King>(Color::WHITE));     // e1
+    // // Grid::set(1, 4, std::make_unique<Knight>(Color::WHITE));   // e2 – pinned piece
 
     // // Black pieces
-    // // board_.set(7, 4, std::make_unique<Rook>(Color::BLACK));     // e8 – creates the pin
-    // // board_.set(6, 0, std::make_unique<King>(Color::BLACK));     // a7 – arbitrary safe placement
+    // // Grid::set(7, 4, std::make_unique<Rook>(Color::BLACK));     // e8 – creates the pin
+    // // Grid::set(6, 0, std::make_unique<King>(Color::BLACK));     // a7 – arbitrary safe placement
 
     // // pinned pieces 2
     // // White pieces
-    // // board_.set(0, 4, std::make_unique<King>(Color::WHITE));     // e1
-    // // board_.set(1, 4, std::make_unique<Bishop>(Color::WHITE));   // e2 – pinned piece
+    // // Grid::set(0, 4, std::make_unique<King>(Color::WHITE));     // e1
+    // // Grid::set(1, 4, std::make_unique<Bishop>(Color::WHITE));   // e2 – pinned piece
 
     // // Black pieces
-    // // board_.set(7, 4, std::make_unique<Rook>(Color::BLACK));     // e8 – creates the pin
-    // // board_.set(6, 0, std::make_unique<King>(Color::BLACK));     // a7 – arbitrary safe placement
+    // // Grid::set(7, 4, std::make_unique<Rook>(Color::BLACK));     // e8 – creates the pin
+    // // Grid::set(6, 0, std::make_unique<King>(Color::BLACK));     // a7 – arbitrary safe placement
 
-    // // almost checkmate
+    // almost checkmate
     // // White king
-    // board_.set(5, 5, std::make_unique<King>(Color::WHITE));   // f6
+    // Grid::set(5, 5, std::make_unique<King>(Color::WHITE));   // f6
 
     // // White queen
-    // board_.set(5, 6, std::make_unique<Queen>(Color::WHITE));  // g6
+    // Grid::set(5, 6, std::make_unique<Queen>(Color::WHITE));  // g6
 
     // // Black king
-    // board_.set(7, 7, std::make_unique<King>(Color::BLACK));   // h8
+    // Grid::set(7, 7, std::make_unique<King>(Color::BLACK));   // h8
+
+    // Grid::set(7, 1, std::make_unique<Knight>(Color::BLACK));
+
 
     // // castling
     // // --- WHITE (rank 0) ---
-    // board_.set(0, 0, std::make_unique<Rook>(Color::WHITE));     // a1 - unmoved, queen-side rook
-    // board_.set(0, 1, std::make_unique<Knight>(Color::WHITE));   // b1 - BLOCKS queen-side castle
+    // Grid::set(0, 0, std::make_unique<Rook>(Color::WHITE));     // a1 - unmoved, queen-side rook
+    // Grid::set(0, 1, std::make_unique<Knight>(Color::WHITE));   // b1 - BLOCKS queen-side castle
     // // c1, d1 empty
-    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));     // e1 - unmoved
+    // Grid::set(0, 4, std::make_unique<King>(Color::WHITE));     // e1 - unmoved
     // // f1, g1 empty
-    // board_.set(0, 7, std::make_unique<Rook>(Color::WHITE));     // h1 - unmoved, king-side rook
+    // Grid::set(0, 7, std::make_unique<Rook>(Color::WHITE));     // h1 - unmoved, king-side rook
 
     // // --- BLACK (rank 7) ---
-    // board_.set(7, 0, std::make_unique<Rook>(Color::BLACK));     // a8 - unmoved, queen-side rook
+    // Grid::set(7, 0, std::make_unique<Rook>(Color::BLACK));     // a8 - unmoved, queen-side rook
     // // b8, c8, d8 empty
-    // board_.set(7, 4, std::make_unique<King>(Color::BLACK));     // e8 - unmoved
-    // board_.set(7, 5, std::make_unique<Bishop>(Color::BLACK));   // f8 - BLOCKS king-side castle
-    // board_.set(7, 7, std::make_unique<Rook>(Color::BLACK));     // h8 - unmoved
+    // Grid::set(7, 4, std::make_unique<King>(Color::BLACK));     // e8 - unmoved
+    // Grid::set(7, 5, std::make_unique<Bishop>(Color::BLACK));   // f8 - BLOCKS king-side castle
+    // Grid::set(7, 7, std::make_unique<Rook>(Color::BLACK));     // h8 - unmoved
 
     // // --- A white rook on e5 gives check to black king on e8, preventing king-side castle ---
-    // board_.set(4, 4, std::make_unique<Rook>(Color::WHITE));     // e5 - attacks e8, puts black in SINGLE_CHECK
+    // Grid::set(4, 4, std::make_unique<Rook>(Color::WHITE));     // e5 - attacks e8, puts black in SINGLE_CHECK
 
 
     // // insufficient material
-    // board_.set(0, 4, std::make_unique<King>(Color::WHITE));   // e1
-    // board_.set(1, 7, std::make_unique<Bishop>(Color::WHITE)); // h2 (light square)
+    // Grid::set(0, 4, std::make_unique<King>(Color::WHITE));   // e1
+    // Grid::set(1, 7, std::make_unique<Bishop>(Color::WHITE)); // h2 (light square)
 
-    // board_.set(7, 7, std::make_unique<King>(Color::BLACK));   // h8
-    // board_.set(4, 4, std::make_unique<Bishop>(Color::BLACK)); // e5 (light square) — capturable by Bd4
+    // Grid::set(7, 7, std::make_unique<King>(Color::BLACK));   // h8
+    // Grid::set(4, 4, std::make_unique<Bishop>(Color::BLACK)); // e5 (light square) — capturable by Bd4
 
 }
 
-void Board::setPieceAt(const Coordinate& coordinate, std::shared_ptr<Piece> piece) {
-    board_.set(coordinate, std::move(piece));
+void Board::set(const Coordinate& coordinate, std::unique_ptr<Piece> piece) {
+    Grid::set(coordinate.rank, coordinate.file,  std::move(piece));
 }
 
-void Board::movePiece(const Coordinate& source, const Coordinate& destination) {
-    board_.move(source, destination);
+void Board::move(const Coordinate& source, const Coordinate& destination) {
+    Grid::move(source.rank, source.file, destination.rank, destination.file);
 }
 
 void Board::restart() {
-    clear();
+    Grid::clear();
     initialize();
 }
 
@@ -130,7 +133,7 @@ Coordinate Board::findKing(Color color) const
 {
     for (int r = 0; r < BOARD_SIZE; r++) {
         for (int f = 0; f < BOARD_SIZE; f++) {
-            const auto& piece = board_.at(r, f);
+            const auto& piece = Grid::at(r, f);
             if (piece && piece->type() == PieceType::KING && piece->color() == color ) {
                 return {r, f};
             }
@@ -141,7 +144,7 @@ Coordinate Board::findKing(Color color) const
 
 bool Board::isFriendly(Coordinate &coord, Color color) const
 {
-    const auto target = getPieceAt(coord);
+    const auto target = at(coord);
     if (target) {
         return target->color() == color;;
     }
@@ -150,7 +153,7 @@ bool Board::isFriendly(Coordinate &coord, Color color) const
 
 bool Board::isEnemy(Coordinate &coord, Color color) const
 {
-    const auto target = getPieceAt(coord);
+    const auto target = at(coord);
     if (target) {
         return target->color() != color;;
     }
@@ -159,7 +162,7 @@ bool Board::isEnemy(Coordinate &coord, Color color) const
 
 bool Board::inBounds(const Coordinate &coord) const
 {
-    return board_.inBounds(coord);
+    return Grid::inBounds(coord.rank, coord.file);
 }
 
 bool Board::isPathClear(const Coordinate& source, const Coordinate& destination) const
@@ -174,7 +177,7 @@ bool Board::isPathClear(const Coordinate& source, const Coordinate& destination)
     int file = source.file + stepFile;
 
     while (rank != destination.rank || file != destination.file) {
-        if (getPieceAt({rank, file}) != nullptr) {
+        if (at({rank, file}) != nullptr) {
             return false;
         }
         rank += stepRank;
@@ -188,10 +191,15 @@ bool Board::isLightSquare(int rank, int file) const
     return (rank + file) % 2 == 0;
 }
 
-std::shared_ptr<Piece> Board::getPieceAt(const Coordinate& coordinate) const {
-    return board_.at(coordinate);
+Board Board::clone() const
+{
+    Board copy;
+    for (std::size_t i = 0; i < Board::SIZE; ++i) {
+        copy.data[i] = data[i] ? data[i]->clone() : nullptr;
+    }
+    return copy;
 }
 
-void Board::clear() {
-    board_ = {};
+Piece* Board::at(const Coordinate& coordinate) const {
+    return Grid::at(coordinate.rank, coordinate.file).get();
 }

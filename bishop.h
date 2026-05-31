@@ -6,13 +6,16 @@
 class Bishop final : public Piece {
 public:
     explicit Bishop(const Color color)
-        : Piece(color) {
-        type_ = PieceType::BISHOP;
-    }
+        : Piece(color, PieceType::BISHOP) {}
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {
         return DIRECTIONS;
     }
+
+    std::unique_ptr<Piece> clone() const override {
+        return std::make_unique<Bishop>(*this);
+    };
+
     bool isSliding() const override { return true; }
 
 private:

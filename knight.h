@@ -7,14 +7,16 @@
 class Knight final : public Piece {
 public:
     explicit Knight(Color color)
-        : Piece(color) {
-        type_ = PieceType::KNIGHT;
-    }
+        : Piece(color, PieceType::KNIGHT) {}
 
-    // std::vector<std::shared_ptr<Move> > calculatePossibleMoves(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board, const Coordinate &source) override;
     std::span<const std::array<int, 2> > getMoveDirections() const override {
         return DIRECTIONS;
     };
+
+    std::unique_ptr<Piece> clone() const override {
+        return std::make_unique<Knight>(*this);
+    };
+
     bool isSliding() const override { return false; };
 
 private:

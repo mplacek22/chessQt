@@ -64,7 +64,7 @@ QList<QPair<int, int> > GameController::highlightedSquares() const
 QString GameController::svgPathForSquare(int sq) const
 {
     auto coord = indexToCoordinate(sq);
-    auto piece = game_->board().getPieceAt(coord);
+    auto piece = game_->board().at(coord);
     return piece ? PieceUtils::imageSource(piece->color(), piece->type()) : "";
 }
 
@@ -131,7 +131,7 @@ void GameController::clearMoves()
 void GameController::selectSourceSquare(int index)
 {
     auto coordinate = indexToCoordinate(index);
-    auto piece = game_->board().getPieceAt(coordinate);
+    auto piece = game_->board().at(coordinate);
     if (!piece || piece->color() != game_->currentPlayer()) return;
 
     selectedSquare_ = index;
@@ -163,6 +163,7 @@ void GameController::clearSelection()
     selectedSquare_ = -1;
     highlightedSquares_.clear();
     activeMoves_.clear();
+    notifyBoardModel();
 }
 
 MovePairList GameController::movesList() const {

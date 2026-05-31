@@ -57,7 +57,7 @@ void ConsoleGameUI::displayBoard() const
     for (int r = 7; r >= 0; --r) {
         std::string line = std::to_string(r + 1) + "| ";
         for (int f = 0; f < 8; ++f) {
-            auto piece = game_.board().getPieceAt({r, f});
+            auto piece = game_.board().at({r, f});
             if (piece) {
                 line += pieceChar(piece->type(), piece->color());
             } else

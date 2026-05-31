@@ -5,13 +5,15 @@
 class King final : public Piece {
 public:
     explicit King(Color color)
-        : Piece(color) {
-        type_ = PieceType::KING;
-    }
+        : Piece(color, PieceType::KING) {}
 
     std::span<const std::array<int, 2>> getMoveDirections() const override {
         return MOVE_DIRECTIONS;
     }
+
+    std::unique_ptr<Piece> clone() const override {
+        return std::make_unique<King>(*this);
+    };
 
     bool isSliding() const override { return false; }
 

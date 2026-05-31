@@ -130,7 +130,7 @@ Coordinate sourceFromSAN(const std::string &raw, const Color color, const Board 
             if (hintFile != -1 && f != hintFile) continue;
             if (hintRank != -1 && r != hintRank) continue;
 
-            auto piece = board.getPieceAt({ r, f });
+            auto piece = board.at({ r, f });
             if (!piece || piece->type() != pieceType || piece->color() != color) continue;
             // if (!board({ r, f }, dest)) continue;
             // if (MoveGenerator::calculatePseudoLegalMoves(board, {r,f}, GameStatus::IN_PROGRESS))
@@ -310,7 +310,7 @@ Move san::fromSAN(const std::string& san, const Board& board, const GameState& g
     // matching legal moves
     std::vector<Move> candidates;
     // tod add disambig
-    auto piece = board.getPieceAt(source);
+    auto piece = board.at(source);
     if(!piece || piece->color() != gameState.currentPlayer || piece->type() != movingType){
         throw InvalidSanException("Source piece invalid");
     }

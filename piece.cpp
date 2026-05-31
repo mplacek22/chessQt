@@ -5,24 +5,28 @@
 #include "Rook.h"
 #include "Knight.h"
 
-Piece::Piece(const Color color) {
-    color_ = color;
-}
+PieceType Piece::type() const { return type_; }
 
-std::shared_ptr<Piece> Piece::create(Color color, const PieceType pieceType) {
+Color Piece::color() const { return color_; }
+
+bool Piece::hasMoved() const { return hasMoved_; }
+
+void Piece::setHasMoved(const bool hasMoved) { hasMoved_ = hasMoved; }
+
+std::unique_ptr<Piece> Piece::create(Color color, const PieceType pieceType) {
     switch (pieceType) {
     case PieceType::PAWN:
-        return std::make_shared<Pawn>(color);
+        return std::make_unique<Pawn>(color);
     case PieceType::KNIGHT:
-        return std::make_shared<Knight>(color);
+        return std::make_unique<Knight>(color);
     case PieceType::BISHOP:
-        return std::make_shared<Bishop>(color);
+        return std::make_unique<Bishop>(color);
     case PieceType::ROOK:
-        return std::make_shared<Rook>(color);
+        return std::make_unique<Rook>(color);
     case PieceType::KING:
-        return std::make_shared<King>(color);
+        return std::make_unique<King>(color);
     case PieceType::QUEEN:
-        return std::make_shared<Queen>(color);
+        return std::make_unique<Queen>(color);
     default:
         return nullptr;
     }
