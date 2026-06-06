@@ -1,6 +1,6 @@
 #include "game.h"
 #include "move_generator.h"
-#include "pawn.h"
+#include <iostream>
 
 Game::Game() = default;
 
@@ -17,18 +17,13 @@ void Game::restart() {
 }
 
 void Game::executeMove(const Move& move) {
-    const auto piece = board_.at(move.source);
     board_.move(move.source, move.destination);
-    if (!piece->hasMoved()) {
-        piece->setHasMoved(true);
-    }
-
+    board_.at(move.destination)->hasMoved = true;
     switch (move.moveType) {
         case MoveType::ENPASSANT: {
             // remove the captured piece from the board
-            const auto movingPiece = dynamic_cast<Pawn*>(piece);
-            const int rank = move.destination.rank - movingPiece->getNormalMoveDirections().front();
-            board_.set({rank, move.destination.file}, nullptr);
+            const int rank = move.destination.rank - (board_.at(move.source)->color == Color::WHITE ? 1 : -1);
+            board_.set({rank, move.destination.file}, std::nullopt);
             break;
         }
         case MoveType::PROMOTION: {
@@ -43,7 +38,7 @@ void Game::executeMove(const Move& move) {
             Coordinate rookSource = {rank, 7};
             Coordinate rookDestination = {rank, 5}; //f1 (white), f8 (black)
             board_.move(rookSource, rookDestination);
-            board_.at(rookDestination)->setHasMoved(true);
+            board_.at(rookDestination)->hasMoved = true;
             break;
         }
         case MoveType::CASTLE_QUEENSIDE: {
@@ -51,7 +46,7 @@ void Game::executeMove(const Move& move) {
             const Coordinate rookSource = {rank, 0};
             const Coordinate rookDestination = {rank, 3}; //d1 (white), d8 (black)
             board_.move(rookSource, rookDestination);
-            board_.at(rookDestination)->setHasMoved(true);
+            board_.at(rookDestination)->hasMoved = true;
             break;
         }
         default:
@@ -78,8 +73,8 @@ void Game::updateGameStatus() {
 
     const Color enemyColor = oppositeColor(currentPlayer_);
     const GameState state = gameState();
-    const bool canEnemyMove = MoveGenerator::canPlayerMove(state, enemyColor);
-    const auto numCheckers = MoveGenerator::computeCheckers(state).size();
+    const bool canEnemyMove = move_generator::canPlayerMove(state, enemyColor);
+    const auto numCheckers = move_generator::computeCheckers(state).size();
 
     if (numCheckers == 0) {
         if(canEnemyMove) {
@@ -137,9 +132,9 @@ bool Game::isInsufficientMaterial() const
             const auto piece = board_.at({r, f});
             if (!piece) continue;
 
-            auto&[knights, total, hasBishopOnLight, hasBishopOnDark] = piece->color() == Color::WHITE ? white : black;
+            auto&[knights, total, hasBishopOnLight, hasBishopOnDark] = piece->color == Color::WHITE ? white : black;
 
-            switch (piece->type()) {
+            switch (piece->type) {
             case PieceType::PAWN:
             case PieceType::ROOK:
             case PieceType::QUEEN:
@@ -210,7 +205,7 @@ void Game::promotePawn(PieceType type)
     if (!pendingPromotion()) {
         return;
     }
-    board_.set(pendingPromotionMove_.value().destination, Piece::create(currentPlayer_, type));
+    board_.set(pendingPromotionMove_.value().destination, { type, currentPlayer_ });
     updateGameStatus();
     if (pendingPromotionMove_.has_value()) {
         pendingPromotionMove_.value().gameStatusAfterMove = status_;
@@ -233,6 +228,6 @@ bool Game::isGameOngoing() const
 
 void Game::requestPossibleMoves(const Coordinate &coord)
 {
-    auto moves = MoveGenerator::calculatePossibleMoves(coord, gameState());
+    auto moves = move_generator::calculatePossibleMoves(coord, gameState());
     mediator_->onPossibleMovesCalculated(moves);
 }

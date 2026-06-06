@@ -6,18 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ─── Shared core logic (no Qt) ───────────────────────────────────────────────
 add_library(chess_core STATIC
-    piece.h       piece.cpp
-    board.h       board.cpp
+    piece.h
+        board.h       board.cpp
     game.h        game.cpp
     move.h
     coordinate.h
-    bishop.h      bishop.cpp
-    king.h        king.cpp
-    knight.h      knight.cpp
-    pawn.h        pawn.cpp
-    queen.h       queen.cpp
-    rook.h        rook.cpp
-    Color.h
+        Color.h
     MoveType.h
     pieceType.h
     gameStatus.h
@@ -25,7 +19,7 @@ add_library(chess_core STATIC
     grid.h
     game_state.h
     drawCause.h
-    move_generator.h
+    move_generator.h move_generator.cpp
     san.h  san.cpp
     InvalidSANException.h
     i_game_mediator.h
@@ -70,6 +64,7 @@ qt_add_qml_module(appchess
        qml/pieces/b_pawn.svg
        qml/pieces/b_queen.svg
        qml/pieces/b_rook.svg
+       SOURCES move_generator.cpp
 )
 
 target_link_libraries(appchess PRIVATE chess_core Qt6::Quick)

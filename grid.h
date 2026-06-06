@@ -21,17 +21,34 @@ public:
     static constexpr std::size_t SIZE = Rows * Cols;
 
     Grid() = default;
+    Grid(const Grid&) = default;
+    Grid& operator=(const Grid&) = default;
     Grid(Grid&&) = default;
     Grid& operator=(Grid&&) = default;
 
     /**
-     * @brief Returns const reference to specified cell.
+     * @brief Returns a const reference to specified cell.
      * @param row Row of the cell
      * @param col Column of the cell
      * @return Const reference to the element at (rank, file).
      * @throws std::out_of_range if coordinates are out of bounds.
      */
     const T& at(const int row, const int col) const
+    {
+        if (!inBounds(row, col))
+            throw std::out_of_range("Grid::at — coordinate out of bounds");
+
+        return data[index(row, col)];
+    }
+
+    /**
+     * @brief Returns a mutable reference to specified cell.
+     * @param row Row of the cell
+     * @param col Column of the cell
+     * @return Const reference to the element at (rank, file).
+     * @throws std::out_of_range if coordinates are out of bounds.
+     */
+    T& at(const int row, const int col)
     {
         if (!inBounds(row, col))
             throw std::out_of_range("Grid::at — coordinate out of bounds");
@@ -70,8 +87,13 @@ public:
         if (!inBounds(rowSrc, colSrc) || !inBounds(rowDest, colDest))
             throw std::out_of_range("Grid::move — coordinate out of bounds");
 
-        data[index(rowDest, colDest)] = std::move(data[index(rowSrc, colSrc)]);
-        data[index(rowSrc, colSrc)] = T{};
+        auto& src = data[index(rowSrc, colSrc)];
+
+        if (!src.has_value())
+            throw std::logic_error("Grid::move — source cell is empty");
+
+        data[index(rowDest, colDest)] = std::move(src);
+        src.reset();
     }
 
     /**
@@ -96,7 +118,7 @@ public:
      * @brief Resets all cells to the default value.
      */
     void clear() {
-        data = {};
+        for (auto& cell : data) cell = T{};
     }
 
 protected:

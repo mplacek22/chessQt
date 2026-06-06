@@ -55,7 +55,7 @@ Move resolveCastle(bool isKingSide, const GameState &gameState)
     Coordinate source(rank, 4);
 
     if(isKingSide) {
-        if(MoveGenerator::canCastleKingSide(gameState)) {
+        if(move_generator::canCastleKingSide(gameState)) {
             auto move = Move{source, Coordinate{rank , 6}, gameState.currentPlayer};
             move.moveType = MoveType::CASTLE_KINGSIDE;
             move.movingPieceType = PieceType::KING;
@@ -63,7 +63,7 @@ Move resolveCastle(bool isKingSide, const GameState &gameState)
         }
         throw InvalidSanException("Can't castle king side.");
     }
-    if(MoveGenerator::canCastleKingSide(gameState)) {
+    if(move_generator::canCastleKingSide(gameState)) {
         auto move = Move{source, Coordinate{rank , 2}, gameState.currentPlayer};
         move.moveType = MoveType::CASTLE_KINGSIDE;
         move.movingPieceType = PieceType::KING;
@@ -204,10 +204,10 @@ Move san::fromSAN(const std::string& san, const GameState& gameState)
     std::vector<Move> candidates;
     // tod add disambig
     auto piece = gameState.board.at(source);
-    if(!piece || piece->color() != gameState.currentPlayer || piece->type() != movingType){
+    if(!piece || piece->color != gameState.currentPlayer || piece->type != movingType){
         throw InvalidSanException("Source piece invalid");
     }
-    for (auto moves = MoveGenerator::calculatePossibleMoves(source, gameState); auto& m : moves) {
+    for (auto moves = move_generator::calculatePossibleMoves(source, gameState); auto& m : moves) {
         if (m.destination != destination) continue;
         if (m.isCapture != isCapture)
         if(promotionPiece) {

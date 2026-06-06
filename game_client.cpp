@@ -18,7 +18,7 @@ void GameClient::onGameStateChanged(const GameState &gameState)
     for (int i = 0; i < 64; ++i) {
         auto piece = gameState.board.at(indexToCoordinate(i));
         cachedPieces_[i] = piece
-                               ? std::make_optional(std::pair{piece->color(), piece->type()})
+                               ? std::make_optional(std::pair{piece->color, piece->type})
                                : std::nullopt;
     }
     cachedCurrentPlayer_ = gameState.currentPlayer;

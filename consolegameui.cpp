@@ -37,8 +37,6 @@ void ConsoleGameUI::run()
 
         mediator_->onMoveRequested(*it);
     }
-
-    gameOver();
 }
 
 void ConsoleGameUI::possibleMovesCalculated(std::vector<Move> moves)

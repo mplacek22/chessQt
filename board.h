@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Coordinate.h"
-#include <memory>
+#include <optional>
 #include "Grid.h"
 #include "Piece.h"
 
@@ -10,24 +10,29 @@
  *
  * @brief Represents the chess board.
  */
-class Board : public Grid<std::unique_ptr<Piece>> {
+class Board : public Grid<std::optional<Piece>> {
 public:
     static constexpr int BOARD_SIZE = 8;
 
     Board();
-
-    ~Board() = default;
-
+    Board(const Board&) = default;
+    Board& operator=(const Board&) = default;
     Board(Board&&) = default;
-
     Board& operator=(Board&&) = default;
 
     /**
-     * @brief Returns a piece placed at the specified coordinate.
+     * @brief Returns a mutable piece reference placed at the specified coordinate.
      * @param coordinate Board coordinate to be inspected.
      * @return Pointer to the piece at the coordinate or nullptr if the square is empty
      */
-    [[nodiscard]] Piece* at(const Coordinate &coordinate) const;
+    [[nodiscard]] std::optional<Piece>& at(const Coordinate &coordinate);
+
+    /**
+     * @brief Returns a const piece reference placed at the specified coordinate.
+     * @param coordinate Board coordinate to be inspected.
+     * @return Pointer to the piece at the coordinate or nullptr if the square is empty
+     */
+    [[nodiscard]] const std::optional<Piece>& at(const Coordinate &coordinate) const;
 
     /**
      * @brief Sets a piece at the specified coordinate.
@@ -37,7 +42,17 @@ public:
      * @param coordinate Destination square.
      * @param piece Piece to be placed.
      */
-    void set(const Coordinate &coordinate, std::unique_ptr<Piece> piece);
+    void set(const Coordinate &coordinate, const Piece& piece);
+
+    /**
+     * @brief Sets a piece at the specified coordinate.
+     *
+     * Any existing piece on the square is replaced.
+     *
+     * @param coordinate Destination square.
+     * @param piece Piece to be placed.
+     */
+    void set(const Coordinate &coordinate, const std::optional<Piece> piece);
 
     /**
      * @brief Moves a piece from source square to destination square
@@ -114,17 +129,6 @@ public:
      */
     [[nodiscard]] static bool isLightSquare(int rank, int file);
 
-    /**
-     * @brief Creates a deep copy of the board.
-     *
-     * Constructs a new Board instance containing copies of all pieces on this board
-     * in their current positions.
-     *
-     * @return A deep copy of this board.
-     */
-    [[nodiscard]] Board clone() const;
-
 private:
     void initialize();
-
 };

@@ -74,5 +74,4 @@ private:
     void setDraw(DrawCause drawCause);
 
     void setPendingPromotionMove(std::optional<Move> moveOpt);
-
 };
