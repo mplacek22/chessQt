@@ -1,25 +1,21 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 #include "gameStatus.h"
 #include "Board.h"
 #include "Move.h"
 #include "game_state.h"
-#include "IGameObserver.h"
+#include "colleague.h"
 
 #include <DrawCause.h>
 #include <vector>
-// #include <unordered_set>
 
-class Game
+class Game : public Colleague
 {
 public:
     Game();
     void start();
 
     void restart();
-
-    void exit();
 
     [[nodiscard]] const Board& board() const { return board_; }
 
@@ -31,36 +27,29 @@ public:
 
     void processMove(Move &currentMove);
 
-    bool pendingPromotion() const { return pendingPromotion_; }
-
-    std::optional<Coordinate> promotionSquare() const { return promotionSquare_; }
+    [[nodiscard]] bool pendingPromotion() const { return pendingPromotionMove_.has_value(); }
 
     void promotePawn(PieceType type);
 
-    const GameState gameState() const;
+    [[nodiscard]] GameState gameState() const;
 
-    const std::optional<DrawCause> drawCause() const { return drawCause_; }
+    [[nodiscard]] std::optional<DrawCause> drawCause() const { return drawCause_; }
 
-    const std::optional<Color> winner() { return winner_; }
+    [[nodiscard]] std::optional<Color> winner() const { return winner_; }
 
-    void setObserver(std::weak_ptr<IGameObserver> observer) {
-        observer_ = std::move(observer);
-    }
+    [[nodiscard]] bool isGameOngoing() const;
 
-    bool isGameOngoing() const;
+    void requestPossibleMoves(const Coordinate& coord);
 
-    std::vector<Move> calculatePossibleMovesFromCoord(const Coordinate& source);
 
 private:
     Color currentPlayer_ = Color::WHITE;
     Board board_ = Board();
     std::vector<Move> movesHistory_;
     GameStatus status_ = GameStatus::NEW;
-    bool pendingPromotion_ = false;
-    std::optional<Coordinate> promotionSquare_;
+    std::optional<Move> pendingPromotionMove_;
     std::optional<Color> winner_;
     std::optional<DrawCause> drawCause_;
-    std::weak_ptr<IGameObserver> observer_;
     static constexpr int ONGOING_GAME_STATUSES_MASK =
         (1 << static_cast<int>(GameStatus::IN_PROGRESS)) |
         (1 << static_cast<int>(GameStatus::SINGLE_CHECK)) |
@@ -74,16 +63,16 @@ private:
 
     void updateWinner();
 
-    bool isFiftyMoveRule() const;
+    [[nodiscard]] bool isFiftyMoveRule() const;
 
-    bool isRepetition() const;
+    [[nodiscard]] bool isRepetition() const;
 
-    bool isInsufficientMaterial() const;
+    [[nodiscard]] bool isInsufficientMaterial() const;
 
-    Color oppositeColor(Color color) const;
+    [[nodiscard]] static Color oppositeColor(Color color);
 
     void setDraw(DrawCause drawCause);
 
-};
+    void setPendingPromotionMove(std::optional<Move> moveOpt);
 
-#endif // GAME_H
+};

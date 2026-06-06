@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Board.h"
 #include "game_state.h"
 
 /**
@@ -20,10 +19,13 @@ namespace san
   * @brief Converts string SAN to {@link Move}
   *
   * @param san SAN string to parse
-  * @param board the current board state
   * @param gameState the current game state
   * @return
   */
- Move fromSAN (const std::string& san, const Board& board, const GameState& gameState);
+ Move fromSAN (const std::string& san, const GameState& gameState);
+
+ Coordinate coordinateFromString(const std::string &raw);
+
+ PieceType charToPieceType(char c);
 };
 

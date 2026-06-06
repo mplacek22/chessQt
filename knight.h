@@ -1,23 +1,36 @@
-#ifndef KNIGHT_H
-#define KNIGHT_H
+#pragma once
 
-#include <Piece.h>
+#include "Piece.h"
 
-
+/**
+ * @class Knight
+ * @brief Represents a bishop chess piece.
+ *
+ * A bishop moves any number of squares diagonally (in 4 directions).
+ * It is a sliding piece.
+ */
 class Knight final : public Piece {
 public:
-    explicit Knight(Color color)
-        : Piece(color, PieceType::KNIGHT) {}
+    explicit Knight(Color color);
 
-    std::span<const std::array<int, 2> > getMoveDirections() const override {
-        return DIRECTIONS;
-    };
+    /**
+     * @copydoc Piece::getMoveDirections()
+     *
+     * Knight either moves up or down one square vertically and over two squares horizontally
+     * OR up or down two squares vertically and over one square horizontally.
+     * This movement can be remembered as an "L-shape" because it looks like a capital "L".
+     */
+    [[nodiscard]] std::span<const std::array<int, 2> > getMoveDirections() const override;;
 
-    std::unique_ptr<Piece> clone() const override {
-        return std::make_unique<Knight>(*this);
-    };
+    /// @copydoc Piece::clone()
+    [[nodiscard]] std::unique_ptr<Piece> clone() const override;;
 
-    bool isSliding() const override { return false; };
+    /**
+    * @copydoc Piece::isSliding()
+    *
+    * Knight always returns false.
+    */
+    [[nodiscard]] bool isSliding() const override;;
 
 private:
     static constexpr std::array<std::array<int, 2>, 8> DIRECTIONS = {{
@@ -25,5 +38,3 @@ private:
         { 1,  2}, { 1, -2}, {-1,  2}, {-1, -2}
     }};
 };
-
-#endif // KNIGHT_H

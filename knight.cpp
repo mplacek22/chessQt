@@ -1,34 +1,15 @@
-// #include "knight.h"
+#include "knight.h"
 
-// Knight::Knight() {}
 
-// std::vector<std::shared_ptr<Move> > Knight::calculatePossibleMoves(const std::array<std::array<std::shared_ptr<Piece>, 8>, 8> &board, const Coordinate &source)
-// {
-//     return Piece::calculatePossibleMoves(board, source);;
+std::span<const std::array<int, 2> > Knight::getMoveDirections() const {
+    return DIRECTIONS;
+}
 
-//     std::vector<std::shared_ptr<Move>> moves;
+Knight::Knight(Color color)
+    : Piece(color, PieceType::KNIGHT) {}
 
-//     for (const auto& dir : getMoveDirections()) {
-//         int rank = source.rank() + dir[0];
-//         int file = source.file() + dir[1];
+std::unique_ptr<Piece> Knight::clone() const {
+    return std::make_unique<Knight>(*this);
+}
 
-//         if (inBounds(rank, file)) {
-//             Coordinate destination  {rank, file};
-//             if(!isFriendly(board, destination)) {
-//                 auto move = std::make_shared<Move>(source, destination, color_);
-//                 move->movingPiece = board[source.rank()][source.file()];
-//                 const auto& capturedPiece = board[rank][file];
-//                 if (capturedPiece) {
-//                     move->moveType = MoveType::CAPTURE;
-//                     move->capturedPiece = capturedPiece;
-//                 }
-//                 else {
-//                     move->moveType = MoveType::NORMAL;
-//                 }
-//                 moves.push_back(move);
-//             }
-//         }
-
-//     }
-//     return moves;
-// }
+bool Knight::isSliding() const { return false; }

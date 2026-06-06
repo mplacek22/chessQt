@@ -25,10 +25,13 @@ add_library(chess_core STATIC
     grid.h
     game_state.h
     drawCause.h
-    move_generator.h  move_generator.cpp
-    IGameObserver.h
+    move_generator.h
     san.h  san.cpp
     InvalidSANException.h
+    i_game_mediator.h
+    colleague.h colleague.cpp
+    game_mediator.h game_mediator.cpp
+    game_client.h game_client.cpp
 )
 target_include_directories(chess_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -51,8 +54,6 @@ qt_add_qml_module(appchess
        qml/PieceButton.qml
        qml/GameOverDialog.qml
    SOURCES
-
-
        boardmodel.h      boardmodel.cpp
        gamecontroller.h  gamecontroller.cpp
        chessEnums.h

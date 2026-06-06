@@ -1,23 +1,29 @@
 #pragma once
 
-#include "Game.h"
+#include "game_client.h"
 
 
-class ConsoleGameUI : public IGameObserver
+
+class ConsoleGameUI : public GameClient
 {
 public:
-    explicit ConsoleGameUI(Game& game) : game_(game) {}
-
     void run();
 
-private:
-    Game& game_;
+    void possibleMovesCalculated(std::vector<Move> moves) override;
+    void onGameStateChanged(const GameState& gameState) override;
+    void onGameWon(Color winner) override;
+    void onGameDrawn(DrawCause drawCause) override;
+    void onPendingPromotionChanged(bool pendingPromotion) override;
 
+private:
     void displayBoard() const;
     char pieceChar(PieceType type, Color color) const;
     void displayCurrentPlayer() const;
-    std::optional<std::string> readSAN() const;
-    void gameOver() const;
-    std::string drawCauseToString(DrawCause drawCause) const;
-    std::string gameStatusToString(GameStatus gameStatus) const;
+    void displayStatus() const;
+    [[nodiscard]] std::optional<Coordinate> promptCoordinate(const std::string& prompt) const;
+
+    [[nodiscard]] std::string drawCauseToString(DrawCause drawCause) const;
+    [[nodiscard]] std::string gameStatusToString(GameStatus gameStatus) const;
+
+    static constexpr std::array<PieceType, 4> PROMOTION_PIECES = {PieceType::QUEEN, PieceType::KNIGHT, PieceType::BISHOP, PieceType::ROOK};
 };

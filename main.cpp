@@ -1,7 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include "BoardModel.h"
+#include "Game.h"
+#include "game_mediator.h"
 #include "gamecontroller.h"
 
 int main(int argc, char *argv[])
@@ -12,7 +13,9 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
+    Game game;
     GameController controller;
+    GameMediator mediator(&game, &controller);
 
     engine.rootContext()->setContextProperty("gameController", &controller);
 

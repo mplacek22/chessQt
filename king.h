@@ -1,21 +1,33 @@
 #pragma once
 #include "Piece.h"
 
-
+/**
+ * @class King
+ * @brief Represents a bishop chess piece.
+ *
+ * A king can move 1 square in any direction.
+ * It is not a sliding piece.
+ */
 class King final : public Piece {
 public:
-    explicit King(Color color)
-        : Piece(color, PieceType::KING) {}
+    explicit King(Color color);
 
-    std::span<const std::array<int, 2>> getMoveDirections() const override {
-        return MOVE_DIRECTIONS;
-    }
+    /**
+     * @copydoc Piece::getMoveDirections()
+     *
+     * Bishop can move 1 square in any directions.
+     */
+    [[nodiscard]] std::span<const std::array<int, 2>> getMoveDirections() const override;
 
-    std::unique_ptr<Piece> clone() const override {
-        return std::make_unique<King>(*this);
-    };
+    /// @copydoc Piece::clone()
+    [[nodiscard]] std::unique_ptr<Piece> clone() const override;;
 
-    bool isSliding() const override { return false; }
+    /**
+    * @copydoc Piece::isSliding()
+    *
+    * King always returns false.
+    */
+    [[nodiscard]] bool isSliding() const override;
 
 private:
     static constexpr std::array<std::array<int, 2>, 8> MOVE_DIRECTIONS = {{

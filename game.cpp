@@ -2,10 +2,11 @@
 #include "move_generator.h"
 #include "pawn.h"
 
-Game::Game() {}
+Game::Game() = default;
 
 void Game::start() {
     status_ = GameStatus::IN_PROGRESS;
+    mediator_->onGameStateChanged(gameState());
 }
 
 void Game::restart() {
@@ -16,7 +17,7 @@ void Game::restart() {
 }
 
 void Game::executeMove(const Move& move) {
-    auto piece = board_.at(move.source);
+    const auto piece = board_.at(move.source);
     board_.move(move.source, move.destination);
     if (!piece->hasMoved()) {
         piece->setHasMoved(true);
@@ -25,14 +26,13 @@ void Game::executeMove(const Move& move) {
     switch (move.moveType) {
         case MoveType::ENPASSANT: {
             // remove the captured piece from the board
-            auto movingPiece = dynamic_cast<Pawn*>(piece);
-            int rank = move.destination.rank - movingPiece->getNormalMoveDirections().front();
+            const auto movingPiece = dynamic_cast<Pawn*>(piece);
+            const int rank = move.destination.rank - movingPiece->getNormalMoveDirections().front();
             board_.set({rank, move.destination.file}, nullptr);
             break;
         }
         case MoveType::PROMOTION: {
-            promotionSquare_ = move.destination;
-            pendingPromotion_ = true;
+            setPendingPromotionMove(move);
             if(move.promotionPieceType) {
                 promotePawn(move.promotionPieceType.value());
             }
@@ -47,9 +47,9 @@ void Game::executeMove(const Move& move) {
             break;
         }
         case MoveType::CASTLE_QUEENSIDE: {
-            int rank = move.destination.rank;
-            Coordinate rookSource = {rank, 0};
-            Coordinate rookDestination = {rank, 3}; //d1 (white), d8 (black)
+            const int rank = move.destination.rank;
+            const Coordinate rookSource = {rank, 0};
+            const Coordinate rookDestination = {rank, 3}; //d1 (white), d8 (black)
             board_.move(rookSource, rookDestination);
             board_.at(rookDestination)->setHasMoved(true);
             break;
@@ -65,21 +65,21 @@ void Game::switchPlayer() {
 
 void Game::updateGameStatus() {
     if (isFiftyMoveRule()) {
-        setDraw(DrawCause::FIFTY_MOVE_RULE);
+        setDraw(FIFTY_MOVE_RULE);
         return;
     }
 
     if(isInsufficientMaterial()) {
-        setDraw(DrawCause::INSUFFICIENT_MATERIAL);
+        setDraw(INSUFFICIENT_MATERIAL);
         return;
     }
 
     // todo: repetition
 
-    Color enemyColor = oppositeColor(currentPlayer_);
-    GameState state = gameState();
-    bool canEnemyMove = MoveGenerator::canPlayerMove(board_, state, enemyColor);
-    int numCheckers = MoveGenerator::computeCheckers(board_, state).size();
+    const Color enemyColor = oppositeColor(currentPlayer_);
+    const GameState state = gameState();
+    const bool canEnemyMove = MoveGenerator::canPlayerMove(state, enemyColor);
+    const auto numCheckers = MoveGenerator::computeCheckers(state).size();
 
     if (numCheckers == 0) {
         if(canEnemyMove) {
@@ -90,12 +90,12 @@ void Game::updateGameStatus() {
         }
         return;
     }
-    else if (numCheckers > 0 && !canEnemyMove) {
+    if (!canEnemyMove) {
         status_ = GameStatus::CHECK_MATE;
         updateWinner();
         return;
     }
-    else if (numCheckers == 1) {
+    if (numCheckers == 1) {
         status_ = GameStatus::SINGLE_CHECK;
     }
     else if (numCheckers == 2) {
@@ -107,6 +107,7 @@ void Game::updateWinner()
 {
     if (status_ == GameStatus::CHECK_MATE){
         winner_ = currentPlayer_;
+        mediator_->onGameWon(winner_.value());
     }
 }
 
@@ -133,10 +134,10 @@ bool Game::isInsufficientMaterial() const
 
     for (int r = 0; r < Board::BOARD_SIZE; ++r) {
         for (int f = 0; f < Board::BOARD_SIZE; ++f) {
-            auto piece = board_.at({r, f});
+            const auto piece = board_.at({r, f});
             if (!piece) continue;
 
-            auto& counts = (piece->color() == Color::WHITE) ? white : black;
+            auto&[knights, total, hasBishopOnLight, hasBishopOnDark] = piece->color() == Color::WHITE ? white : black;
 
             switch (piece->type()) {
             case PieceType::PAWN:
@@ -144,12 +145,12 @@ bool Game::isInsufficientMaterial() const
             case PieceType::QUEEN:
                 return false; // any major piece (P, R, Q) -> sufficient material
             case PieceType::KNIGHT:
-                ++counts.total;
-                ++counts.knights;
+                ++total;
+                ++knights;
                 break;
             case PieceType::BISHOP:
-                ++counts.total;
-                (board_.isLightSquare(r, f) ? counts.hasBishopOnLight : counts.hasBishopOnDark) = true;
+                ++total;
+                (Board::isLightSquare(r, f) ? hasBishopOnLight : hasBishopOnDark) = true;
                 break;
             default:
                 break;
@@ -174,8 +175,7 @@ bool Game::isInsufficientMaterial() const
     return false;
 }
 
-Color Game::oppositeColor(Color color) const
-{
+Color Game::oppositeColor(const Color color) {
     return color == Color::WHITE ? Color::BLACK : Color::WHITE;
 }
 
@@ -183,35 +183,47 @@ void Game::setDraw(DrawCause drawCause)
 {
     status_ = GameStatus::DRAW;
     drawCause_ = drawCause;
+    mediator_->onGameDrawn(drawCause);
 }
-void Game::processMove(Move& move) {
-    executeMove(move);
-    if (pendingPromotion_) {
+
+
+void Game::setPendingPromotionMove(std::optional<Move> moveOpt)
+{
+    pendingPromotionMove_ = moveOpt;
+    mediator_->onPromotionPending(moveOpt.has_value());
+}
+
+void Game::processMove(Move& currentMove) {
+    executeMove(currentMove);
+    if (pendingPromotion()) {
         return;
     }
     updateGameStatus();
-    move.gameStatusAfterMove = status_;
-    movesHistory_.push_back(move);
+    currentMove.gameStatusAfterMove = status_;
+    movesHistory_.push_back(currentMove);
     switchPlayer();
+    mediator_->onGameStateChanged(gameState());
 }
 
 void Game::promotePawn(PieceType type)
 {
-    if (!promotionSquare_ || !pendingPromotion_) {
+    if (!pendingPromotion()) {
         return;
     }
-    board_.set(promotionSquare_.value(), Piece::create(currentPlayer_, type));
-    pendingPromotion_ = false;
-    promotionSquare_ = std::nullopt;
-    Move& lastMove = movesHistory_.back();
-    lastMove.promotionPieceType = type;
+    board_.set(pendingPromotionMove_.value().destination, Piece::create(currentPlayer_, type));
     updateGameStatus();
+    if (pendingPromotionMove_.has_value()) {
+        pendingPromotionMove_.value().gameStatusAfterMove = status_;
+        pendingPromotionMove_.value().promotionPieceType = type;
+        movesHistory_.push_back(pendingPromotionMove_.value());
+        setPendingPromotionMove(std::nullopt);
+    }
     switchPlayer();
+    mediator_->onGameStateChanged(gameState());
 }
 
-const GameState Game::gameState() const
-{
-    return {currentPlayer_, status_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())};
+GameState Game::gameState() const {
+    return {currentPlayer_, status_, board_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())};
 }
 
 bool Game::isGameOngoing() const
@@ -219,7 +231,8 @@ bool Game::isGameOngoing() const
     return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(status_));
 }
 
-std::vector<Move> Game::calculatePossibleMovesFromCoord(const Coordinate &source)
+void Game::requestPossibleMoves(const Coordinate &coord)
 {
-    return MoveGenerator::calculatePossibleMoves(board_, source, gameState());
+    auto moves = MoveGenerator::calculatePossibleMoves(coord, gameState());
+    mediator_->onPossibleMovesCalculated(moves);
 }

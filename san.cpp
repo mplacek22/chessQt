@@ -1,5 +1,7 @@
 #include "san.h"
 
+#include <string>
+
 #include "InvalidSANException.h"
 #include "move_generator.h"
 
@@ -35,118 +37,6 @@ Coordinate coordinateFromString(const std::string &raw)
     return {rank, file};
 }
 
-Coordinate destinationFromSAN(const std::string &raw, const Color color)
-{
-    if (raw.empty()) {
-        throw InvalidSanException("Empty string");
-    }
-    std::string san = raw;
-
-    // Strip check/checkmate suffix
-    if (san.back() == '+' || san.back() == '#'){
-        san.pop_back();
-    }
-
-    // Castling
-    if (san == "0-0") {
-        return { color == Color::WHITE ? 0 : 7, 6 };
-    }
-    if (san == "0-0-0"){
-        return { color == Color::WHITE ? 0 : 7, 2 };
-    }
-
-    // Strip promotion suffix
-    if (san.size() >= 2 && san[san.size()-2] == '=') {
-        san.resize(san.size() - 2);
-    }
-
-    if (san.size() < 2) {
-        throw InvalidSanException("SAN too short: " + raw);
-    }
-
-    return coordinateFromString(san.substr(san.size() - 2));
-}
-
-Coordinate sourceFromSAN(const std::string &raw, const Color color, const Board &board)
-{
-    if (raw.empty()) {
-        throw InvalidSanException("Empty string");
-    }
-    std::string san = raw;
-    // Strip check/checkmate suffix
-    if (!san.empty() && (san.back() == '+' || san.back() == '#'))
-        san.pop_back();
-
-    // Castling
-    if (san == "0-0" || san == "0-0-0")
-        return { color == Color::WHITE ? 0 : 7, 4 };
-
-    // Strip promotion suffix
-    if (san.size() >= 2 && san[san.size()-2] == '=') {
-        san.resize(san.size() - 2);
-    }
-
-    if (san.size() < 2) {
-        throw InvalidSanException("SAN too short: " + raw);
-    }
-
-    PieceType pieceType = PieceType::PAWN;
-    if (!san.empty() && std::isupper(static_cast<unsigned char>(san[0]))) {
-        switch (san[0]) {
-        case 'N': pieceType = PieceType::KNIGHT; break;
-        case 'B': pieceType = PieceType::BISHOP; break;
-        case 'R': pieceType = PieceType::ROOK;   break;
-        case 'Q': pieceType = PieceType::QUEEN;  break;
-        case 'K': pieceType = PieceType::KING;   break;
-        default:  throw InvalidSanException(std::string("Unknown piece '") + san[0] + "'");
-        }
-        san.erase(san.begin());
-    }
-
-    // Strip capture mark
-    if (!san.empty() && san.back() == 'x')
-        san.pop_back();
-
-    // Parse disambiguation hint what remains is "", "f", "r", or "fr"
-    int hintFile = -1, hintRank = -1;
-    //strip desination
-    san.resize(san.size() - 2);
-    if (san.size() == 2) {
-        // Full source square encoded in SAN — no board scan needed
-        return coordinateFromString(san);
-    } else if (san.size() == 1) {
-        char c = san[0];
-        if      (c >= 'a' && c <= 'h') hintFile = c - 'a';
-        else if (c >= '1' && c <= '8') hintRank = c - '1';
-        else throw InvalidSanException(std::string("Unexpected disambiguation char '") + c + "'");
-    } else if (!san.empty()) {
-        throw InvalidSanException("Unexpected leftover '" + san + "' in: '" + raw + "'");
-    }
-
-    // Scan board for candidates
-    std::vector<Coordinate> candidates;
-    for (int r = 0; r < Board::BOARD_SIZE; ++r) {
-        for (int f = 0; f < Board::BOARD_SIZE; ++f) {
-            if (hintFile != -1 && f != hintFile) continue;
-            if (hintRank != -1 && r != hintRank) continue;
-
-            auto piece = board.at({ r, f });
-            if (!piece || piece->type() != pieceType || piece->color() != color) continue;
-            // if (!board({ r, f }, dest)) continue;
-            // if (MoveGenerator::calculatePseudoLegalMoves(board, {r,f}, GameStatus::IN_PROGRESS))
-            candidates.push_back({ r, f });
-        }
-    }
-
-    // Resolve
-    if (candidates.empty())
-        throw InvalidSanException("Source piece not found");
-    if (candidates.size() > 1)
-        throw InvalidSanException("Ambiguous move");
-
-    return candidates[0];
-}
-
 std::string stripCheckAnnotations(const std::string &raw)
 {
     if (!raw.empty() && (raw.back() == '+' || raw.back() == '#'))
@@ -159,13 +49,13 @@ std::string coordinateToSAN(const Coordinate& coordinate)
     return {fileSAN(coordinate.file), rankSAN(coordinate.rank)};
 }
 
-Move resolveCastle(bool isKingSide, const Board &board, const GameState &gameState)
+Move resolveCastle(bool isKingSide, const GameState &gameState)
 {
     int rank = gameState.currentPlayer == Color::WHITE ? 0 : 7;
     Coordinate source(rank, 4);
 
     if(isKingSide) {
-        if(MoveGenerator::canCastleKingSide(board, gameState)) {
+        if(MoveGenerator::canCastleKingSide(gameState)) {
             auto move = Move{source, Coordinate{rank , 6}, gameState.currentPlayer};
             move.moveType = MoveType::CASTLE_KINGSIDE;
             move.movingPieceType = PieceType::KING;
@@ -173,26 +63,13 @@ Move resolveCastle(bool isKingSide, const Board &board, const GameState &gameSta
         }
         throw InvalidSanException("Can't castle king side.");
     }
-    if(MoveGenerator::canCastleKingSide(board, gameState)) {
+    if(MoveGenerator::canCastleKingSide(gameState)) {
         auto move = Move{source, Coordinate{rank , 2}, gameState.currentPlayer};
         move.moveType = MoveType::CASTLE_KINGSIDE;
         move.movingPieceType = PieceType::KING;
         return move;
     }
     throw InvalidSanException("Can't castle queen side.");
-}
-
-PieceType charToPieceType(char c)
-{
-    switch (std::toupper(c)) {
-    case 'B': return PieceType::BISHOP;
-    case 'K': return PieceType::KING;
-    case 'N': return PieceType::KNIGHT;
-    case 'P': return PieceType::PAWN;
-    case 'Q': return PieceType::QUEEN;
-    case 'R': return PieceType::ROOK;
-    default: throw InvalidSanException(std::string("Unknown piece char: ") + c);
-    }
 }
 
 char pieceTypeToChar(PieceType pieceType)
@@ -208,6 +85,20 @@ char pieceTypeToChar(PieceType pieceType)
 }
 
 }
+
+PieceType san::charToPieceType(char c)
+{
+    switch (std::toupper(c)) {
+    case 'B': return PieceType::BISHOP;
+    case 'K': return PieceType::KING;
+    case 'N': return PieceType::KNIGHT;
+    case 'P': return PieceType::PAWN;
+    case 'Q': return PieceType::QUEEN;
+    case 'R': return PieceType::ROOK;
+    default: throw InvalidSanException(std::string("Unknown piece char: ") + c);
+    }
+}
+
 std::string san::toSAN(const Move &move)
 {
     if (move.moveType == MoveType::CASTLE_KINGSIDE)  return "O-O";
@@ -243,16 +134,18 @@ std::string san::toSAN(const Move &move)
     }
 
     switch (move.gameStatusAfterMove) {
-    case GameStatus::SINGLE_CHECK: notation += '+'; break;
-    case GameStatus::DOUBLE_CHECK: notation += '+'; break;
-    case GameStatus::CHECK_MATE: notation += '#'; break;
+    case GameStatus::SINGLE_CHECK:
+    case GameStatus::DOUBLE_CHECK:
+        notation += '+'; break;
+    case GameStatus::CHECK_MATE:
+        notation += '#'; break;
     default: break;
     }
 
     return notation;
 }
 
-Move san::fromSAN(const std::string& san, const Board& board, const GameState& gameState)
+Move san::fromSAN(const std::string& san, const GameState& gameState)
 {
     if (san.empty()) {
         throw InvalidSanException("Empty string");
@@ -260,10 +153,10 @@ Move san::fromSAN(const std::string& san, const Board& board, const GameState& g
     auto s = stripCheckAnnotations(san);
 
     if (san == "0-0-0") {
-        return resolveCastle(true, board, gameState);
+        return resolveCastle(true, gameState);
     }
     if (san == "0-0") {
-        return resolveCastle(false, board, gameState);
+        return resolveCastle(false, gameState);
     }
 
     //parse promotion suffix
@@ -294,7 +187,7 @@ Move san::fromSAN(const std::string& san, const Board& board, const GameState& g
 
     if (s.size() < 2) throw InvalidSanException("SAN destination coord too short: " + san);
 
-    Coordinate destination = coordinateFromString(s.substr(s.size() - 2, s.size() -1));
+    const Coordinate destination = coordinateFromString(s.substr(s.size() - 2, s.size() -1));
 
 
     // Ambiguous source prefix: null/ file/ file + rank
@@ -310,12 +203,11 @@ Move san::fromSAN(const std::string& san, const Board& board, const GameState& g
     // matching legal moves
     std::vector<Move> candidates;
     // tod add disambig
-    auto piece = board.at(source);
+    auto piece = gameState.board.at(source);
     if(!piece || piece->color() != gameState.currentPlayer || piece->type() != movingType){
         throw InvalidSanException("Source piece invalid");
     }
-    auto moves = MoveGenerator::calculatePossibleMoves(board, source, gameState);
-    for (auto& m : moves) {
+    for (auto moves = MoveGenerator::calculatePossibleMoves(source, gameState); auto& m : moves) {
         if (m.destination != destination) continue;
         if (m.isCapture != isCapture)
         if(promotionPiece) {
@@ -323,7 +215,7 @@ Move san::fromSAN(const std::string& san, const Board& board, const GameState& g
             m.promotionPieceType = promotionPiece.value();
 
         }
-        candidates.push_back(m);
+    candidates.push_back(m);
     }
 
     if (candidates.empty())
@@ -332,7 +224,19 @@ Move san::fromSAN(const std::string& san, const Board& board, const GameState& g
         throw InvalidSanException("Ambiguous SAN (multiple matches): " + san);
 
     return candidates[0];
-
-    throw InvalidSanException("Invalid value");
 }
 
+
+Coordinate san::coordinateFromString(const std::string &raw)
+{
+    if (raw.size() < 2) {
+        throw InvalidSanException("Coordinate too short: " + raw);
+    }
+    if (raw[0] < 'a' || raw[0] > 'h' ||
+        raw[1] < '1' || raw[1] > '8') {
+        throw InvalidSanException("File must be between 'a' and 'h' and rank between '1' and '8'");
+    }
+    int file = raw[0] - 'a';
+    int rank = raw[1] - '1';
+    return {rank, file};
+}

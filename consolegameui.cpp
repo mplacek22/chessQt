@@ -1,70 +1,113 @@
-#include "consolegameui.h"
-#include <iostream>
 #include "InvalidSANException.h"
+#include "consolegameui.h"
 #include "san.h"
+#include <iostream>
+#include <algorithm>
 
 void ConsoleGameUI::run()
 {
-    game_.start();
-    while(game_.isGameOngoing()) {
+    GameClient::startGame();
+
+    while (isGameOngoing_) {
+        std::cout << "\n\n";
         displayCurrentPlayer();
-        std::cout << "Game state: " << gameStatusToString(game_.status()) << std::endl;
+        displayStatus();
         displayBoard();
 
-        auto san = readSAN();
-        if (!san.has_value())
-            break;
+        auto source = promptCoordinate("Source square (e.g. e2): ");
+        if (!source) break;
 
-        try {
-            Move move = san::fromSAN(san.value(), game_.board(), game_.gameState());
-            game_.processMove(move);
-        }
-        catch (const InvalidSanException& e) {
-            std::cout << e.what() << std::endl;
-                continue;
+        mediator_->onPossibleMovesRequested(source.value());
+        if (cachedPossibleMoves_.empty()) {
+            std::cout << "No legal moves from that square. Try again.\n";
+            continue;
         }
 
-        // Coordinate source{-1, -1};
-        // Coordinate destination{-1, -1};
-        // try {
-        //     source = AlgebraicNotationTranslator::sourceFromSAN(san.value(), game_.currentPlayer(), game_.board());
-        //     destination = AlgebraicNotationTranslator::destinationFromSAN(san.value(), game_.currentPlayer());
-        // }
-        // catch (const InvalidSanException& e) {
-        //     std::cout << e.what() << std::endl;
-        //     continue;
-        // }
+        auto destination = promptCoordinate("Destination square (e.g. e4): ");
+        if (!destination) break;
 
-        // auto activeMoves = MoveGenerator::calculatePossibleMoves(game_.board(), source, game_.gameState());
-        // auto it = std::find_if(activeMoves.begin(), activeMoves.end(),
-        //                        [&](const std::shared_ptr<Move>& m) {
-        //                            return m->destination == destination;
-        //                        });
-        // if (it == activeMoves.end()) {
-        //     std::cout << "Move " + san.value() + " is not allowed." << std::endl;
-        //     continue;
-        // }
+        auto it = std::find_if(cachedPossibleMoves_.begin(), cachedPossibleMoves_.end(),
+                               [&](const Move& m) {
+                                   return m.destination == destination;
+                               });
+        if (it == cachedPossibleMoves_.end()) {
+            std::cout << "Move is not allowed. Try again.\n";
+            continue;
+        }
 
-        // game_.processMove(**it);
+        mediator_->onMoveRequested(*it);
     }
 
     gameOver();
 }
 
+void ConsoleGameUI::possibleMovesCalculated(std::vector<Move> moves)
+{
+    GameClient::possibleMovesCalculated(moves);
+}
+
+void ConsoleGameUI::onGameStateChanged(const GameState &gameState)
+{
+    GameClient::onGameStateChanged(gameState);
+}
+
+void ConsoleGameUI::onGameWon(Color winner)
+{
+    GameClient::onGameWon(winner);
+    std::cout << "Game over!" << std::endl;
+    std::string winnerStr = winner == Color::WHITE ? "white" : "black";
+    std::cout << "The winner is: " << winnerStr << std::endl;
+}
+
+void ConsoleGameUI::onGameDrawn(DrawCause drawCause)
+{
+    GameClient::onGameDrawn(drawCause);
+    std::cout << "Game over!" << std::endl;
+    std::cout << "It's a draw!" << std::endl;
+    std::cout << "Draw cause: " << drawCauseToString(drawCause_.value()) << std::endl;
+}
+
+void ConsoleGameUI::onPendingPromotionChanged(bool pendingPromotion)
+{
+    GameClient::onPendingPromotionChanged(pendingPromotion);
+    if (!pendingPromotion) return;
+
+    std::cout << "Pawn promotion! Choose piece [Q, R, B, N]: ";
+    while (true) {
+        std::string input;
+        if (!std::getline(std::cin, input)) {
+            GameClient::promotePawn(PieceType::QUEEN);  // default
+            return;
+        }
+        if (input.empty()) continue;
+
+        try {
+            PieceType type = san::charToPieceType(toupper(input[0]));
+            if (std::find(PROMOTION_PIECES.begin(), PROMOTION_PIECES.end(), type)
+                != PROMOTION_PIECES.end()) {
+                GameClient::promotePawn(type);
+                return;
+            }
+        } catch (const InvalidSanException&) {}
+
+        std::cout << "Invalid choice. Enter Q, R, B or N: ";
+    }
+}
+
 void ConsoleGameUI::displayBoard() const
 {
     std::cout << "   a b c d e f g h\n  -----------------" << std::endl;
-    for (int r = 7; r >= 0; --r) {
-        std::string line = std::to_string(r + 1) + "| ";
+    for (int r = 0; r < 8; ++r) {
+        std::string line = std::to_string(8 - r) + "| ";
         for (int f = 0; f < 8; ++f) {
-            auto piece = game_.board().at({r, f});
+            auto piece = cachedPieces_[r * 8 + f];
             if (piece) {
-                line += pieceChar(piece->type(), piece->color());
+                line += pieceChar(piece.value().second, piece.value().first);
             } else
                 line += '.';
             line += ' ';
         }
-        line += '|' + std::to_string(r + 1);
+        line += '|' + std::to_string(8 - r);
         std::cout << line << std::endl;
     }
     std::cout << "  -----------------\n   a b c d e f g h" << std::endl;
@@ -91,44 +134,33 @@ char ConsoleGameUI::pieceChar(PieceType type, Color color) const
 
 void ConsoleGameUI::displayCurrentPlayer() const
 {
-    std::cout << "Current player: " << (game_.currentPlayer() == Color::WHITE ? "White" : "Black") << std::endl;
+    std::cout << "Current player: " << (cachedCurrentPlayer_ == Color::WHITE ? "White" : "Black") << std::endl;
 }
 
-std::optional<std::string> ConsoleGameUI::readSAN() const
+void ConsoleGameUI::displayStatus() const
 {
-    std::string input;
+    std::cout << "Game state: " << gameStatusToString(cachedGameStatus_) << std::endl;
+}
+
+std::optional<Coordinate> ConsoleGameUI::promptCoordinate(const std::string& prompt) const
+{
     while (true) {
-        std::cout << "Enter move in SAN" << std::endl;
-        if (!std::getline(std::cin, input))
-            return std::nullopt;
+        std::cout << prompt << std::endl;
+        std::string input;
+        if (!std::getline(std::cin, input)) return std::nullopt;
+
         auto start = input.find_first_not_of(" \t");
         auto end   = input.find_last_not_of(" \t");
-
-        if (start == std::string::npos)
-            continue;
+        if (start == std::string::npos) continue;
         input = input.substr(start, end - start + 1);
 
-        if (input.size() < 2 || input.size() > 7) {
-            std::cout << "Invalid input, try again.\n";
-            continue;
+        // if (input == "q" || input == "Q") return std::nullopt;
+
+        try {
+            return san::coordinateFromString(input);
+        } catch (const InvalidSanException& e) {
+            std::cout << "Invalid coordinate: " << e.what() << ". Try again.\n";
         }
-
-        return input;
-    }
-}
-
-void ConsoleGameUI::gameOver() const
-{
-    if(game_.isGameOngoing()) return;
-
-    std::cout << "Game over!" << std::endl;
-    if(game_.winner()) {
-        std::string winner = game_.winner().value() == Color::WHITE ? "white" : "black";
-        std::cout << "The winner is: " << winner << std::endl;
-    }
-    if(game_.drawCause()) {
-        std::cout << "It's a draw!" << std::endl;
-        std::cout << "Draw cause: " << drawCauseToString(game_.drawCause().value()) << std::endl;
     }
 }
 

@@ -3,19 +3,18 @@
 #include "san.h"
 
 GameController::GameController(QObject* parent): QObject(parent),
-    game_(std::make_unique<Game>()),
     boardModel_(std::make_unique<BoardModel>(this, this)) {}
 
 BoardModel *GameController::board() const { return boardModel_.get(); }
 
 void GameController::startGame() {
-    game_->start();
+    GameClient::startGame();
     emit statusChanged();
     notifyBoardModel();
 }
 
 void GameController::restartGame() {
-    game_->restart();
+    GameClient::restartGame();
     clearSelection();
     clearMoves();
     emit statusChanged();
@@ -24,9 +23,9 @@ void GameController::restartGame() {
 
 void GameController::promotePawn(Chess::Enums::PieceType pieceType)
 {
-    game_->promotePawn(static_cast<PieceType>(pieceType));
+    GameClient::promotePawn(static_cast<PieceType>(pieceType));
     clearSelection();
-    appendMove();
+
     emit pendingPromotionChanged();
     emit currentPlayerChanged();
 }
@@ -34,7 +33,7 @@ void GameController::promotePawn(Chess::Enums::PieceType pieceType)
 void GameController::selectSquare(int index)
 {
     // can't move if there is pending promotion
-    if(game_->pendingPromotion()) return;
+    if(cachedPendingPromotion_) return;
 
     if(selectedSquare_ == -1)
     {
@@ -63,34 +62,54 @@ QList<QPair<int, int> > GameController::highlightedSquares() const
 
 QString GameController::svgPathForSquare(int sq) const
 {
-    auto coord = indexToCoordinate(sq);
-    auto piece = game_->board().at(coord);
-    return piece ? PieceUtils::imageSource(piece->color(), piece->type()) : "";
+    auto piece = cachedPieces_[sq];
+    return piece ? PieceUtils::imageSource(piece->first, piece->second) : "";
+}
+
+void GameController::possibleMovesCalculated(std::vector<Move> moves)
+{
+    GameClient::possibleMovesCalculated(moves);
+    highlightedSquares_.clear();
+    for (const auto& move : moves)
+        highlightedSquares_.append({move.destination.rank, move.destination.file});
+    notifyBoardModel();
+}
+
+void GameController::onGameStateChanged(const GameState &gameState)
+{
+    if (cachedPendingPromotion_) return;
+    GameClient::onGameStateChanged(gameState);
+    clearSelection();
+    if(gameState.lastMove && !cachedPendingPromotion_) {
+        appendMove(gameState.lastMove.value());
+    }
+    emit currentPlayerChanged();
+    emit statusChanged();
+    notifyBoardModel();
+}
+
+void GameController::onGameWon(Color winner)
+{
+    GameClient::onGameWon(winner);
+    emit statusChanged();
+}
+
+void GameController::onGameDrawn(DrawCause drawCause)
+{
+    GameClient::onGameDrawn(drawCause);
+    emit statusChanged();
 }
 
 Chess::Enums::Color GameController::currentPlayer() const {
-    return game_->currentPlayer() == Color::WHITE ? Chess::Enums::Color::WHITE : Chess::Enums::Color::BLACK;
+    return cachedCurrentPlayer_ == Color::WHITE ? Chess::Enums::Color::WHITE : Chess::Enums::Color::BLACK;
 }
 
 QString GameController::status() const {
-    return PieceUtils::gameStatusToString(game_->status());
+    return PieceUtils::gameStatusToString(cachedGameStatus_);
 }
 
 bool GameController::isGameOngoing() const {
-    return game_->isGameOngoing();
-}
-
-void GameController::onMoveExecuted() {
-    if (game_->pendingPromotion()){
-        emit pendingPromotionChanged();
-    }
-    else {
-        clearSelection();
-        emit currentPlayerChanged();
-        emit statusChanged();
-        appendMove();
-        notifyBoardModel();
-    }
+    return isGameOngoing_;
 }
 
 void GameController::notifyBoardModel()
@@ -102,15 +121,10 @@ void GameController::notifyBoardModel()
         );
 }
 
-void GameController::appendMove()
+void GameController::appendMove(const Move& move)
 {
-    const auto& history = game_->movesHistory();
-    const std::size_t total = history.size();
-    if (total == 0) return;
-
-    auto lastMove = history.back();
-    const QString san = QString::fromStdString(san::toSAN(history.back()));
-    if (lastMove.player == Color::WHITE){
+    const QString san = QString::fromStdString(san::toSAN(move));
+    if (move.player == Color::WHITE){
         QVariantMap pair;
         pair["white"] = san;
         pair["black"] = "";
@@ -131,38 +145,32 @@ void GameController::clearMoves()
 void GameController::selectSourceSquare(int index)
 {
     auto coordinate = indexToCoordinate(index);
-    auto piece = game_->board().at(coordinate);
-    if (!piece || piece->color() != game_->currentPlayer()) return;
+    auto piece = cachedPieces_[index];
+    if (!piece || piece.value().first != cachedCurrentPlayer_) return;
 
     selectedSquare_ = index;
-
-    activeMoves_ = game_->calculatePossibleMovesFromCoord(coordinate);
-    highlightedSquares_.clear();
-    for (const auto& move : activeMoves_)
-        highlightedSquares_.append({move.destination.rank, move.destination.file});
-
-    notifyBoardModel();
+    emit squareSelectionChanged();
+    mediator_->onPossibleMovesRequested(coordinate);
 }
 
 // Second square clicked — attempt the move
 void GameController::selectDestinationSquare(int index)
 {
     auto coordinate = indexToCoordinate(index);
-    auto it = std::find_if(activeMoves_.begin(), activeMoves_.end(),
+    auto it = std::find_if(cachedPossibleMoves_.begin(), cachedPossibleMoves_.end(),
                            [&](const Move& m) {
                                return m.destination == coordinate;
                            });
-    if (it == activeMoves_.end()) return;
-
-    game_->processMove(*it);
-    onMoveExecuted();
+    if (it == cachedPossibleMoves_.end()) return;
+    
+    mediator_->onMoveRequested(*it);
 }
 
 void GameController::clearSelection()
 {
     selectedSquare_ = -1;
+    emit squareSelectionChanged();
     highlightedSquares_.clear();
-    activeMoves_.clear();
     notifyBoardModel();
 }
 
@@ -170,22 +178,28 @@ MovePairList GameController::movesList() const {
     return movesList_;
 }
 
-bool GameController::pendingPromotion() const { return game_->pendingPromotion(); }
+bool GameController::pendingPromotion() const {
+    return cachedPendingPromotion_;
+}
 
 int GameController::winner() const
 {
-    auto winnerOpt = game_->winner();
-    if (winnerOpt.has_value()) {
-        return static_cast<int>(winnerOpt.value());
+    if (winner_.has_value()) {
+        return static_cast<int>(winner_.value());
     }
     return -1;
 }
 
 QString GameController::drawCause() const
 {
-    auto drawCauseOpt = game_->drawCause();
-    if (drawCauseOpt.has_value()) {
-        return PieceUtils::drawCauseToString(drawCauseOpt.value());
+    if (drawCause_.has_value()) {
+        return PieceUtils::drawCauseToString(drawCause_.value());
     }
     return "";
+}
+
+void GameController::onPendingPromotionChanged(bool pendingPromotion)
+{
+    GameClient::onPendingPromotionChanged(pendingPromotion);
+    emit pendingPromotionChanged();
 }

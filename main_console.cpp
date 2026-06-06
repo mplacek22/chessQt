@@ -1,15 +1,17 @@
 #include "consolegameui.h"
 #include "Game.h"
+#include "game_mediator.h"
 #include <windows.h>
 
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
 
-    auto game = std::make_unique<Game>();
-    auto ui = std::make_shared<ConsoleGameUI>(*game);  // UI owns itself
+    Game game;
+    ConsoleGameUI ui;
+    GameMediator mediator(&game, &ui);
 
-    game->setObserver(ui);   // Game holds a weak_ptr — no cycle
-    ui->run();
+    ui.run();
+
     return 0;
 }

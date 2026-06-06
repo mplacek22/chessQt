@@ -6,42 +6,48 @@
 #include <algorithm>
 #include <vector>
 
+#include "pawn.h"
+
+/**
+ * @brief Chess move generator - calculates all legal moves. Applies chess move rules.
+ *
+ */
 class MoveGenerator
 {
 public:
 
-    // All moves ignoring whether they leave the king in check
-    static std::vector<Move> calculatePseudoLegalMoves(const Board& board, const Coordinate& source, const GameState& state)
+    /**
+     * @brief Generate all fully legal moves for the piece at @p source square.
+     *
+     * 1. Returns empty if @p source square is empty.
+     * 2. Returns an empty list for any non-king piece if gameStatus is double check.
+     * 3. Calculates pseudo-legal moves. Delegates the calculation based on pieceType.
+     * 4. Filters out moves that live king in check.
+     *
+     * @param source Source square of the piece to generate moves for.
+     * @param state Current game state.
+     * @return List of fully legal moves from @p source square.
+     */
+    static std::vector<Move> calculatePossibleMoves(const Coordinate& source, const GameState& state)
     {
-        auto piece = board.at(source);
-        if (!piece) return {};
-        switch (piece->type()) {
-            case PieceType::PAWN:   return calculatePawnMoves(board, source, state);
-            default:                return calculateRegularMoves(board, source); // B, R, Q, N, K
-        }
-    }
-
-    // Filters pseudo-legal moves to only those that are fully legal
-    static std::vector<Move> calculatePossibleMoves(const Board& board, const Coordinate& source, const GameState& state)
-    {
-        auto piece = board.at(source);
+        const auto piece = state.board.at(source);
         if (!piece) return {};
 
         // in double check only the king can move
-        if(state.gameStatus == GameStatus::DOUBLE_CHECK && board.at(source)->type() != PieceType::KING) {
+        if(state.gameStatus == GameStatus::DOUBLE_CHECK && state.board.at(source)->type() != PieceType::KING) {
             return {};
         }
 
         std::vector<Move> pseudo;
         switch (piece->type()) {
             case PieceType::PAWN:
-                pseudo = calculatePawnMoves(board, source, state);
+                pseudo = calculatePawnMoves(source, state);
                 break;
             case PieceType::KING:
-                pseudo = calculateKingMoves(board, source, state);
+                pseudo = calculateKingMoves(source, state);
                 break;
             default:
-                pseudo = calculateRegularMoves(board, source); // B, R, Q, N
+                pseudo = calculateRegularMoves(state.board, source); // B, R, Q, N
                 break;
         }
 
@@ -49,28 +55,40 @@ public:
         legal.reserve(pseudo.size());
 
         for (const auto& move : pseudo) {
-            if (!leavesKingInCheck(move, board, state))
+            if (!leavesKingInCheck(move, state))
                 legal.push_back(move);
         }
 
         return legal;
     }
 
-    static std::vector<Coordinate> computeCheckers(const Board& board, const GameState& gameState)
+    /**
+     * @brief Find all squares, where pieces are currently giving check to the enemy king.
+     *
+     * Iterates over the board. Tests whether any of the @p gameState.currentPlayer
+     * pieces can perform a pseudo legal move that reaches the enemy king's square.
+     *
+     * Stops early once two checkers are found
+     * (double check is the maximum possible in a legal chess position).
+     *
+     * @param gameState Current game state (@c currentPlayer is the attacking side).
+     * @return Coordinates of the checking pieces (0, 1, or 2 entries).
+     */
+    static std::vector<Coordinate> computeCheckers(const GameState& gameState)
     {
-        Color enemy = (gameState.currentPlayer == Color::WHITE) ? Color::BLACK : Color::WHITE;
+        const Color enemy = gameState.currentPlayer == Color::WHITE ? Color::BLACK : Color::WHITE;
 
-        Coordinate kingPosition = board.findKing(enemy);
+        const Coordinate kingPosition = gameState.board.findKing(enemy);
 
         std::vector<Coordinate> checkers;
 
         for (int r = 0; r < Board::BOARD_SIZE; ++r) {
             for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate source {r, f};
-                auto piece = board.at(source);
+                const auto piece = gameState.board.at(source);
                 if (!piece || piece->color() != gameState.currentPlayer) continue;
 
-                auto moves = calculatePseudoLegalMoves(board, source, gameState);
+                auto moves = calculatePseudoLegalMoves(source, gameState);
                 for (const auto& move : moves) {
                     if (move.destination == kingPosition) {
                         checkers.push_back(source);
@@ -85,48 +103,81 @@ public:
         return checkers;
     }
 
-    static bool canPlayerMove(const Board& board, const GameState& gameState, const Color color) {
+
+    /**
+     * @brief Determines whether a player can perform any legal move.
+     *
+     * It is used to detect checkmate and stalemate
+     * If player is in check and this returns @c false it is checkmate.
+     * If not in check and this returns @c false it is stalemate.
+     *
+     * @param gameState Current game state.
+     * @param player The player who is being tested.
+     * @return @c true if @p player has at least one legal move.
+     * */
+    static bool canPlayerMove(const GameState& gameState, const Color player) {
         std::vector<Coordinate> pieces_coords;
 
         for (int r = 0; r < Board::BOARD_SIZE; ++r) {
             for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate coord {r, f};
-                auto piece = board.at(coord);
-                if(piece && piece->color() == color) {
+                const auto piece = gameState.board.at(coord);
+                if(piece && piece->color() == player) {
                     pieces_coords.push_back(coord);
                 }
             }
         }
-        for (const Coordinate& source : pieces_coords) {
-            // any move possible
-            if (!calculatePossibleMoves(board, source, gameState).empty()) {
-                return true;
-            }
-        }
-        return false;
+        return std::ranges::any_of(pieces_coords,
+             [&](const auto& source) {
+                 return !calculatePossibleMoves(source, gameState).empty();
+             }
+         );
     }
 
-    static bool canCastleKingSide(const Board& board, const GameState& state) {
-        return canCastle(board, state, /*kingSide=*/true);
+    /**
+     * @brief Determines whether @c state.currentPlayer can castle king side.
+     *
+     * @param state Current game state.
+     * @return @c true if king side castling is currently legal.
+     */
+    static bool canCastleKingSide(const GameState& state) {
+        return canCastle(state, true);
     }
 
-    static bool canCastleQueenSide(const Board& board, const GameState& state) {
-        return canCastle(board, state, /*kingSide=*/false);
+    /**
+     * @brief Determines whether @c state.currentPlayer can castle queen side.
+     *
+     * @param state Current game state.
+     * @return @c true if queen side castling is currently legal.
+     */
+    static bool canCastleQueenSide(const GameState& state) {
+        return canCastle(state, false);
     }
 
 private:
-    static std::vector<Move> calculatePawnMoves(const Board& board, const Coordinate& source, const GameState& state)
+    // All moves ignoring whether they leave the king in check
+    static std::vector<Move> calculatePseudoLegalMoves(const Coordinate& source, const GameState& state)
+    {
+        const auto piece = state.board.at(source);
+        if (!piece) return {};
+        switch (piece->type()) {
+            case PieceType::PAWN:   return calculatePawnMoves(source, state);
+            default:                return calculateRegularMoves(state.board, source); // B, R, Q, N, K
+        }
+    }
+
+    static std::vector<Move> calculatePawnMoves(const Coordinate& source, const GameState& state)
     {
         std::vector<Move> moves;
-        int moveDirection = state.currentPlayer == Color::WHITE ? 1 : -1;
-        int promotionRank = state.currentPlayer == Color::WHITE ? Board::BOARD_SIZE - 1 : 0;
+        const auto movingPiece = dynamic_cast<Pawn*>(state.board.at(source));
+        const int moveDirection = movingPiece->getNormalMoveDirections().front();
+        const int promotionRank = state.currentPlayer == Color::WHITE ? Board::BOARD_SIZE - 1 : 0;
 
         // forward move - 1 square
         int rank = source.rank + moveDirection;
         int file = source.file;
         Coordinate destination {rank, file};
-        const auto movingPiece = board.at(source);
-        bool singlePushClear = board.inBounds(destination) && board.at(destination) == nullptr;
+        const bool singlePushClear = Board::inBounds(destination) && state.board.at(destination) == nullptr;
 
         if (singlePushClear){
 
@@ -136,43 +187,43 @@ private:
             // promotion
             move.moveType = rank == promotionRank ? MoveType::PROMOTION : MoveType::NORMAL;
 
-            moves.push_back(std::move(move));
+            moves.push_back(move);
         }
 
         // forward move - 2 squares
         rank += moveDirection;
         destination = {rank, file};
-        if (!movingPiece->hasMoved() && singlePushClear && board.inBounds(destination) && board.at(destination) == nullptr) {
+        if (!movingPiece->hasMoved() && singlePushClear && Board::inBounds(destination) && state.board.at(destination) == nullptr) {
             Move move{source, destination, movingPiece->color()};
             move.movingPieceType = movingPiece->type();
             move.moveType = MoveType::PAWN_DOUBLE_NORMAL;
-            moves.push_back(std::move(move));
+            moves.push_back(move);
         }
 
         // capture
         rank = source.rank + moveDirection;
-        for (int f : {-1, 1}) {
+        for (const int f : {-1, 1}) {
             file = source.file + f;
             destination = {rank, file};
-            if (board.inBounds(destination)){
+            if (Board::inBounds(destination)){
                 Move move {source, destination, state.currentPlayer};
                 move.movingPieceType = movingPiece->type();
                 move.isCapture = true;
 
-                if (board.isEnemy(destination, state.currentPlayer)) {
+                if (state.board.isEnemy(destination, state.currentPlayer)) {
                     move.moveType = rank == promotionRank ? MoveType::PROMOTION : MoveType::CAPTURE;
-                    moves.push_back(std::move(move));
+                    moves.push_back(move);
                 }
                 // en passant
                 if (state.lastMove && state.lastMove->moveType == MoveType::PAWN_DOUBLE_NORMAL){
-                    int df = state.lastMove.value().destination.file - source.file;
+                    const int df = state.lastMove.value().destination.file - source.file;
                     // is captured piece next to moving piece
-                    bool next = state.lastMove.value().destination.rank == source.rank && (df == 1 || df == -1);
+                    const bool next = state.lastMove.value().destination.rank == source.rank && (df == 1 || df == -1);
                     // check if the destination of the last move matches the expected captured pawn position
-                    bool isCapturableTarget = state.lastMove->destination.file == destination.file;
-                    if (board.at(destination) == nullptr && next && isCapturableTarget) {
+                    const bool isCapturableTarget = state.lastMove->destination.file == destination.file;
+                    if (state.board.at(destination) == nullptr && next && isCapturableTarget) {
                         move.moveType = MoveType::ENPASSANT;
-                        moves.push_back(std::move(move));
+                        moves.push_back(move);
                     }
                 }
 
@@ -181,36 +232,36 @@ private:
         return moves;
     }
 
-    static std::vector<Move> calculateKingMoves(const Board& board, const Coordinate& source, const GameState& state)
+    static std::vector<Move> calculateKingMoves(const Coordinate& source, const GameState& state)
     {
-        auto moves = calculateRegularMoves(board, source);
-        auto dangerSquares = computeKingDangerSquares(board, source, state);
+        auto moves = calculateRegularMoves(state.board, source);
+        auto dangerSquares = computeKingDangerSquares(source, state);
 
         // Filter out moves to king danger squares
         std::erase_if(moves, [&](const auto& m) {
             return std::ranges::find(dangerSquares, m.destination) != dangerSquares.end();
         });
 
-        if(canCastleKingSide(board, state)) {
+        if(canCastleKingSide(state)) {
             Move move {source, Coordinate{source.rank, 6}, state.currentPlayer};
             move.moveType = MoveType::CASTLE_KINGSIDE;
-            move.movingPieceType = board.at(source)->type();
+            move.movingPieceType = state.board.at(source)->type();
             moves.push_back(move);
         }
-        if(canCastleQueenSide(board, state)) {
+        if(canCastleQueenSide(state)) {
             Move move {source, Coordinate{source.rank, 2}, state.currentPlayer};
             move.moveType = MoveType::CASTLE_QUEENSIDE;
-            move.movingPieceType = board.at(source)->type();
+            move.movingPieceType = state.board.at(source)->type();
             moves.push_back(move);
         }
 
         return moves;
     }
 
-    static std::vector<Coordinate> computeKingDangerSquares(const Board& board,const Coordinate& kingPosition, const GameState& gameState)
+    static std::vector<Coordinate> computeKingDangerSquares(const Coordinate& kingPosition, const GameState& gameState)
     {
-        Color color = board.at(kingPosition)->color();
-        auto boardWithoutKing = board.clone();
+        const Color color = gameState.board.at(kingPosition)->color();
+        auto boardWithoutKing = gameState.board.clone();
         boardWithoutKing.set(kingPosition, nullptr);
 
         std::vector<Coordinate> danger;
@@ -218,7 +269,8 @@ private:
             for (int f = 0; f < Board::BOARD_SIZE; f++) {
                 const auto piece = boardWithoutKing.at({r, f});
                 if (piece && piece->color() != color) {
-                    for (const auto&  m : MoveGenerator::calculatePseudoLegalMoves(boardWithoutKing, {r, f}, gameState)) {
+                    GameState tmpState = {gameState.currentPlayer, gameState.gameStatus, boardWithoutKing, gameState.lastMove};
+                    for (const auto&  m : MoveGenerator::calculatePseudoLegalMoves({r, f}, tmpState)) {
                         danger.push_back(m.destination);
                     }
                 }
@@ -227,36 +279,36 @@ private:
         return danger;
     }
 
-    static bool canCastle(const Board& board, const GameState& state, bool kingSide) {
+    static bool canCastle(const GameState& state, const bool kingSide) {
         // no check
         if(state.gameStatus == GameStatus::SINGLE_CHECK || state.gameStatus == GameStatus::DOUBLE_CHECK){
             return false;
         }
-        // king hasnt moved
-        Coordinate kingStartPosition(state.currentPlayer == Color::WHITE ? 0 : 7, 4);
-        Coordinate kingPosition = board.findKing(state.currentPlayer);
-        auto king = board.at(kingPosition);
+        // king hasn't moved
+        const Coordinate kingStartPosition(state.currentPlayer == Color::WHITE ? 0 : 7, 4);
+        Coordinate kingPosition = state.board.findKing(state.currentPlayer);
+        const auto king = state.board.at(kingPosition);
         if(kingPosition != kingStartPosition || king->hasMoved()) {
             return false;
         }
-        // rook hasnt moved
-        int rookFileOffset = kingSide ? 3 : -4;
-        Coordinate rookStartPosition = {kingPosition.rank, kingPosition.file + rookFileOffset};
-        auto rook = board.at(rookStartPosition);
+        // rook hasn't moved
+        const int rookFileOffset = kingSide ? 3 : -4;
+        const Coordinate rookStartPosition = {kingPosition.rank, kingPosition.file + rookFileOffset};
+        const auto rook = state.board.at(rookStartPosition);
         if (!rook || rook->type() != PieceType::ROOK || rook->hasMoved()) {
             return false;
         }
         // clear path
-        if (!board.isPathClear(kingPosition, rookStartPosition)){
+        if (!state.board.isPathClear(kingPosition, rookStartPosition)){
             return false;
         }
 
         // path squares cant be attacked
-        Color attackerColor = state.currentPlayer == Color::WHITE ? Color::BLACK : Color::WHITE;
-        int direction = kingSide ? 1 : -1;
+        const Color attackerColor = state.currentPlayer == Color::WHITE ? Color::BLACK : Color::WHITE;
+        const int direction = kingSide ? 1 : -1;
         for (int step = 0; step <= 2; ++step) {
-            Coordinate square = {kingPosition.rank, kingPosition.file + direction * step};
-            if (isSquareAttackedBy(board, square, attackerColor, state)) {
+            const Coordinate square = {kingPosition.rank, kingPosition.file + direction * step};
+            if (isSquareAttackedBy(square, attackerColor, state)) {
                 return false;
             }
         }
@@ -264,20 +316,17 @@ private:
         return true;
     }
 
-    static bool isSquareAttackedBy(const Board& board, const Coordinate& target, Color attackerColor, const GameState& gameState, std::optional<Coordinate> ignoredSquare = std::nullopt)
+    static bool isSquareAttackedBy(const Coordinate& target, const Color attackerColor, const GameState& gameState)
     {
-        GameState nextMoveState{attackerColor, gameState.gameStatus};
+        const GameState nextMoveState{attackerColor, gameState.gameStatus, gameState.board, gameState.lastMove};
 
         for (int r = 0; r < Board::BOARD_SIZE; ++r) {
             for (int f = 0; f < Board::BOARD_SIZE; ++f) {
                 Coordinate source = {r, f};
-                if(ignoredSquare && source == ignoredSquare.value()) continue;
-                auto piece = board.at(source);
+                auto piece = gameState.board.at(source);
                 if (!piece || piece->color() != attackerColor) continue;
 
-                auto moves = calculatePseudoLegalMoves(board, source, nextMoveState);
-
-                for (const auto& move : moves) {
+                for (auto moves = calculatePseudoLegalMoves(source, nextMoveState); const auto& move : moves) {
                     if (move.destination == target && move.isCapture)
                         return true;
                 }
@@ -287,7 +336,7 @@ private:
     }
 
     static std::vector<Move> calculateRegularMoves(const Board& board, const Coordinate& source) {
-        auto piece = board.at(source);
+        const auto piece = board.at(source);
         if (!piece) return {};
 
         std::vector<Move> moves;
@@ -302,14 +351,13 @@ private:
 
                 Coordinate destination {rank, file};
 
-                if (!board.inBounds(destination)) break;
+                if (!Board::inBounds(destination)) break;
 
                 if (board.isFriendly(destination, piece->color())) break;
 
                 Move move {source, destination, piece->color()};
                 move.movingPieceType = piece->type();
-                const auto capturedPiece = board.at(destination);
-                if (capturedPiece) {
+                if (board.at(destination)) {
                     move.moveType = MoveType::CAPTURE;
                     move.isCapture = true;
                 }
@@ -326,24 +374,26 @@ private:
         return moves;
     }
 
-    static bool leavesKingInCheck(const Move& move, const Board& board, const GameState& state)
+    static bool leavesKingInCheck(const Move& move, const GameState& state)
     {
-        auto copy = board.clone();
-        auto movingPiece = copy.at(move.source);
-        Color movingColor = movingPiece->color();
-        Color enemy = (movingColor == Color::WHITE) ? Color::BLACK : Color::WHITE;
+        auto copy = state.board.clone();
+        const auto movingPiece = copy.at(move.source);
+        const Color movingColor = movingPiece->color();
+        const Color enemy = (movingColor == Color::WHITE) ? Color::BLACK : Color::WHITE;
 
-        // emove the en-passant captured pawn before checking for check
+        // remove the en-passant captured pawn before checking for check
         if (move.moveType == MoveType::ENPASSANT) {
-            int capturedPawnRank = move.source.rank;
-            int capturedPawnFile = move.destination.file;
+            const int capturedPawnRank = move.source.rank;
+            const int capturedPawnFile = move.destination.file;
             copy.set({capturedPawnRank, capturedPawnFile}, nullptr);
         }
 
         // simulate the move
         copy.move(move.source, move.destination);
 
-        Coordinate kingSquare = copy.findKing(movingColor);
-        return isSquareAttackedBy(copy, kingSquare, enemy, state);
+        const Coordinate kingSquare = copy.findKing(movingColor);
+        const GameState tmpState = {state.currentPlayer, state.gameStatus, copy, move};
+
+        return isSquareAttackedBy(kingSquare, enemy, tmpState);
     }
 };

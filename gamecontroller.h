@@ -1,15 +1,14 @@
 #pragma once
 #include <QObject>
 #include <memory>
-#include "game.h"
 #include "boardmodel.h"
 #include "chessEnums.h"
-#include "IGameObserver.h"
+#include "game_client.h"
 
 using MovePairList = QList<QVariantMap>;
 Q_DECLARE_METATYPE(MovePairList)
 
-class GameController : public QObject, public IGameObserver {
+class GameController : public QObject, public GameClient {
     Q_OBJECT
     Q_PROPERTY(BoardModel* board READ board CONSTANT) // QML expects raw pointer for qt property
     Q_PROPERTY(Chess::Enums::Color currentPlayer READ currentPlayer NOTIFY currentPlayerChanged)
@@ -41,6 +40,11 @@ public:
     int selectedSquare() const;
     QList<QPair<int,int>> highlightedSquares() const;
     QString svgPathForSquare(int sq) const;
+    void possibleMovesCalculated(std::vector<Move> moves) override;
+    void onGameStateChanged(const GameState& gameState) override;
+    void onGameWon(Color winner) override;
+    void onGameDrawn(DrawCause drawCause) override;
+    void onPendingPromotionChanged(bool pendingPromotion) override;
 
 signals:
     void currentPlayerChanged();
@@ -51,23 +55,17 @@ signals:
     void squareSelectionChanged();
 
 private:
-    std::unique_ptr<Game> game_;
     std::unique_ptr<BoardModel> boardModel_;
-
     int selectedSquare_ = -1;
     QList<QPair<int,int>> highlightedSquares_; //todo: change to QSet<int>
-    std::vector<Move> activeMoves_;
     MovePairList movesList_;
-
-    // IGameObserver interface
-    void onMoveExecuted();
 
     void selectSourceSquare(int index);
     void selectDestinationSquare(int index);
     void clearSelection();
     void notifyBoardModel();
-    void appendMove();
     void clearMoves();
+    void appendMove(const Move& move);
 
     static Coordinate indexToCoordinate(int index)
     {
