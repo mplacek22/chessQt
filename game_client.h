@@ -23,13 +23,21 @@ public:
 
 protected:
     bool cachedPendingPromotion_ = false;
-    bool isGameOngoing_ = true;
     Color cachedCurrentPlayer_ = Color::WHITE;
     GameStatus cachedGameStatus_ = GameStatus::NEW;
     std::vector<Move> cachedPossibleMoves_;
     std::optional<Color> winner_;
     std::optional<DrawCause> drawCause_;
     Board cachedBoard_;
+
+    bool isGameOngoing() const;
+
+
+private:
+    static constexpr int ONGOING_GAME_STATUSES_MASK =
+        (1 << static_cast<int>(GameStatus::IN_PROGRESS)) |
+        (1 << static_cast<int>(GameStatus::SINGLE_CHECK)) |
+        (1 << static_cast<int>(GameStatus::DOUBLE_CHECK));
 };
 
 #endif // GAME_CLIENT_H

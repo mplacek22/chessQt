@@ -108,10 +108,6 @@ QString GameController::status() const {
     return PieceUtils::gameStatusToString(cachedGameStatus_);
 }
 
-bool GameController::isGameOngoing() const {
-    return isGameOngoing_;
-}
-
 void GameController::notifyBoardModel()
 {
     emit boardModel_->dataChanged(
@@ -134,6 +130,13 @@ void GameController::appendMove(const Move& move)
        movesList_.last()["black"] = san;
     }
     emit movesChanged();
+}
+
+Coordinate GameController::indexToCoordinate(int index)
+{
+    int file = index % 8;
+    int rank = Board::BOARD_SIZE - 1 - (index / 8);
+    return {rank, file};
 }
 
 void GameController::clearMoves()

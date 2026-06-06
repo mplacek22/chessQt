@@ -28,7 +28,6 @@ public:
     MovePairList movesList() const;
     bool pendingPromotion() const;
     QString status() const;
-    bool isGameOngoing() const;
     int winner() const;
     QString drawCause() const;
 
@@ -67,10 +66,5 @@ private:
     void clearMoves();
     void appendMove(const Move& move);
 
-    static Coordinate indexToCoordinate(int index)
-    {
-        int file = index % 8;
-        int rank = Board::BOARD_SIZE - 1 - (index / 8);
-        return {rank, file};
-    }
+    static Coordinate indexToCoordinate(int index);
 };

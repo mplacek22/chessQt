@@ -8,7 +8,7 @@ void ConsoleGameUI::run()
 {
     GameClient::startGame();
 
-    while (isGameOngoing_) {
+    while (isGameOngoing()) {
         std::cout << "\n\n";
         displayCurrentPlayer();
         displayStatus();

@@ -23,13 +23,11 @@ void GameClient::onGameStateChanged(const GameState &gameState)
 void GameClient::onGameWon(Color winner)
 {
     winner_ = winner;
-    isGameOngoing_ = false;
 }
 
 void GameClient::onGameDrawn(DrawCause drawCause)
 {
     drawCause_ = drawCause;
-    isGameOngoing_ = false;
 }
 
 void GameClient::onPendingPromotionChanged(bool pendingPromotion)
@@ -50,4 +48,9 @@ void GameClient::startGame()
 void GameClient::restartGame()
 {
     mediator_->onRestartRequested();
+}
+
+bool GameClient::isGameOngoing() const
+{
+    return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(cachedGameStatus_));
 }

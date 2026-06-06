@@ -58,13 +58,10 @@ ApplicationWindow {
         Menu {
             title: qsTr("Game")
             Action {
-                text: qsTr("New game")
+                text: qsTr("Restart game")
                 shortcut: StandardKey.New
                 onTriggered: gameController.restartGame()
             }
-            Action { text: qsTr("Open game") }
-            Action { text: qsTr("Save game") }
-            Action { text: qsTr("Save game as") }
             MenuSeparator { }
             Action {
                 text: qsTr("Quit")
