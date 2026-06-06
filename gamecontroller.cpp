@@ -55,7 +55,7 @@ int GameController::selectedSquare() const
     return selectedSquare_;
 }
 
-QList<QPair<int, int> > GameController::highlightedSquares() const
+QSet<int> GameController::highlightedSquares() const
 {
     return highlightedSquares_;
 }
@@ -71,7 +71,7 @@ void GameController::possibleMovesCalculated(std::vector<Move> moves)
     GameClient::possibleMovesCalculated(moves);
     highlightedSquares_.clear();
     for (const auto& move : moves)
-        highlightedSquares_.append({move.destination.rank, move.destination.file});
+        highlightedSquares_.insert(coordinateToIndex(move.destination));
     notifyBoardModel();
 }
 
@@ -108,6 +108,7 @@ QString GameController::status() const {
     return PieceUtils::gameStatusToString(cachedGameStatus_);
 }
 
+
 void GameController::notifyBoardModel()
 {
     emit boardModel_->dataChanged(
@@ -137,6 +138,11 @@ Coordinate GameController::indexToCoordinate(int index)
     int file = index % 8;
     int rank = Board::BOARD_SIZE - 1 - (index / 8);
     return {rank, file};
+}
+
+int GameController::coordinateToIndex(const Coordinate &coordinate)
+{
+    return (Board::BOARD_SIZE - 1 - coordinate.rank) * Board::BOARD_SIZE + coordinate.file;
 }
 
 void GameController::clearMoves()

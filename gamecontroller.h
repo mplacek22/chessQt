@@ -37,7 +37,7 @@ public:
     Q_INVOKABLE void selectSquare(int index);
 
     int selectedSquare() const;
-    QList<QPair<int,int>> highlightedSquares() const;
+    QSet<int> highlightedSquares() const;
     QString svgPathForSquare(int sq) const;
     void possibleMovesCalculated(std::vector<Move> moves) override;
     void onGameStateChanged(const GameState& gameState) override;
@@ -56,7 +56,7 @@ signals:
 private:
     std::unique_ptr<BoardModel> boardModel_;
     int selectedSquare_ = -1;
-    QList<QPair<int,int>> highlightedSquares_; //todo: change to QSet<int>
+    QSet<int> highlightedSquares_;
     MovePairList movesList_;
 
     void selectSourceSquare(int index);
@@ -67,4 +67,6 @@ private:
     void appendMove(const Move& move);
 
     static Coordinate indexToCoordinate(int index);
+
+    static int coordinateToIndex(const Coordinate& coordinate);
 };

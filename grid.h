@@ -18,7 +18,7 @@ public:
     /**
      * @brief Total number of cells.
      */
-    static constexpr std::size_t SIZE = Rows * Cols;
+    static constexpr std::size_t CELLS_COUNT = Rows * Cols;
 
     Grid() = default;
     Grid(const Grid&) = default;
@@ -110,9 +110,9 @@ public:
     /**
      * @brief Returns the total number of cells in the grid.
      *
-     * @return The value of @c SIZE
+     * @return The value of @c CELLS_COUNT
      */
-    [[nodiscard]] static std::size_t size() noexcept { return SIZE; }
+    [[nodiscard]] static std::size_t cellsCount() noexcept { return CELLS_COUNT; }
 
     /**
      * @brief Resets all cells to the default value.
