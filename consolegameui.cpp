@@ -95,17 +95,17 @@ void ConsoleGameUI::onPendingPromotionChanged(bool pendingPromotion)
 void ConsoleGameUI::displayBoard() const
 {
     std::cout << "   a b c d e f g h\n  -----------------" << std::endl;
-    for (int r = 0; r < 8; ++r) {
-        std::string line = std::to_string(8 - r) + "| ";
+    for (int r = 7; r >=0 ; --r) {
+        std::string line = std::to_string(r + 1) + "| ";
         for (int f = 0; f < 8; ++f) {
-            auto piece = cachedPieces_[r * 8 + f];
+            auto piece = cachedBoard_.at({r, f});
             if (piece) {
-                line += pieceChar(piece.value().second, piece.value().first);
+                line += pieceChar(piece->type, piece->color);
             } else
                 line += '.';
             line += ' ';
         }
-        line += '|' + std::to_string(8 - r);
+        line += '|' + std::to_string(r + 1);
         std::cout << line << std::endl;
     }
     std::cout << "  -----------------\n   a b c d e f g h" << std::endl;

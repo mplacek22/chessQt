@@ -15,14 +15,9 @@ static Coordinate indexToCoordinate(int index)
 
 void GameClient::onGameStateChanged(const GameState &gameState)
 {
-    for (int i = 0; i < 64; ++i) {
-        auto piece = gameState.board.at(indexToCoordinate(i));
-        cachedPieces_[i] = piece
-                               ? std::make_optional(std::pair{piece->color, piece->type})
-                               : std::nullopt;
-    }
     cachedCurrentPlayer_ = gameState.currentPlayer;
     cachedGameStatus_ = gameState.gameStatus;
+    cachedBoard_ = gameState.board;
 }
 
 void GameClient::onGameWon(Color winner)

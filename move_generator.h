@@ -74,17 +74,16 @@ namespace move_generator {
 
 
     /**
-     * @brief Determines whether a player can perform any legal move.
+     * @brief Determines whether the current player can perform any legal move.
      *
      * It is used to detect checkmate and stalemate
      * If player is in check and this returns @c false it is checkmate.
      * If not in check and this returns @c false it is stalemate.
      *
      * @param gameState Current game state.
-     * @param player The player who is being tested.
      * @return @c true if @p player has at least one legal move.
      * */
-    bool canPlayerMove(const GameState &gameState, const Color player);
+    bool canCurrentPlayerMove(const GameState &gameState);
 
     /**
      * @brief Determines whether @c state.currentPlayer can castle king side.

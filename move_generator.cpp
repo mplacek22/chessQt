@@ -318,14 +318,14 @@ std::vector<Coordinate> move_generator::computeCheckers(const GameState &gameSta
     return checkers;
 }
 
-bool move_generator::canPlayerMove(const GameState &gameState, const Color player) {
+bool move_generator::canCurrentPlayerMove(const GameState &gameState) {
     std::vector<Coordinate> pieces_coords;
 
     for (int r = 0; r < Board::BOARD_SIZE; ++r) {
         for (int f = 0; f < Board::BOARD_SIZE; ++f) {
             Coordinate coord {r, f};
             const auto piece = gameState.board.at(coord);
-            if(piece && piece->color == player) {
+            if(piece && piece->color == gameState.currentPlayer) {
                 pieces_coords.push_back(coord);
             }
         }

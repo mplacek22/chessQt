@@ -17,30 +17,27 @@ public:
 
     void restart();
 
-    [[nodiscard]] const Board& board() const { return board_; }
+    [[nodiscard]] const Board& board() const;
 
-    [[nodiscard]] Color currentPlayer() const { return currentPlayer_; }
+    [[nodiscard]] Color currentPlayer() const;
 
-    [[nodiscard]] GameStatus status()   const { return status_; }
+    [[nodiscard]] GameStatus status()   const;
 
-    [[nodiscard]] const std::vector<Move>& movesHistory() const { return movesHistory_; }
+    [[nodiscard]] const std::vector<Move>& movesHistory() const;
 
     void processMove(Move &currentMove);
 
-    [[nodiscard]] bool pendingPromotion() const { return pendingPromotionMove_.has_value(); }
+    [[nodiscard]] bool pendingPromotion() const;
 
     void promotePawn(PieceType type);
 
     [[nodiscard]] GameState gameState() const;
 
-    [[nodiscard]] std::optional<DrawCause> drawCause() const { return drawCause_; }
+    [[nodiscard]] std::optional<DrawCause> drawCause() const;
 
-    [[nodiscard]] std::optional<Color> winner() const { return winner_; }
-
-    [[nodiscard]] bool isGameOngoing() const;
+    [[nodiscard]] std::optional<Color> winner() const;
 
     void requestPossibleMoves(const Coordinate& coord);
-
 
 private:
     Color currentPlayer_ = Color::WHITE;
@@ -50,10 +47,6 @@ private:
     std::optional<Move> pendingPromotionMove_;
     std::optional<Color> winner_;
     std::optional<DrawCause> drawCause_;
-    static constexpr int ONGOING_GAME_STATUSES_MASK =
-        (1 << static_cast<int>(GameStatus::IN_PROGRESS)) |
-        (1 << static_cast<int>(GameStatus::SINGLE_CHECK)) |
-        (1 << static_cast<int>(GameStatus::DOUBLE_CHECK));
 
     void switchPlayer();
 

@@ -1,6 +1,5 @@
 #include "game.h"
 #include "move_generator.h"
-#include <iostream>
 
 Game::Game() = default;
 
@@ -12,9 +11,19 @@ void Game::start() {
 void Game::restart() {
     board_.restart();
     currentPlayer_ = Color::WHITE;
+    winner_ = std::nullopt;
+    drawCause_ = std::nullopt;
     movesHistory_.clear();
     start();
 }
+
+const Board &Game::board() const { return board_; }
+
+Color Game::currentPlayer() const { return currentPlayer_; }
+
+GameStatus Game::status() const { return status_; }
+
+const std::vector<Move> &Game::movesHistory() const { return movesHistory_; }
 
 void Game::executeMove(const Move& move) {
     board_.move(move.source, move.destination);
@@ -72,9 +81,11 @@ void Game::updateGameStatus() {
     // todo: repetition
 
     const Color enemyColor = oppositeColor(currentPlayer_);
-    const GameState state = gameState();
-    const bool canEnemyMove = move_generator::canPlayerMove(state, enemyColor);
-    const auto numCheckers = move_generator::computeCheckers(state).size();
+    const GameState currentState = gameState();
+    GameState enemyState = currentState;
+    enemyState.currentPlayer = enemyColor;
+    const bool canEnemyMove = move_generator::canCurrentPlayerMove(enemyState);
+    const auto numCheckers = move_generator::computeCheckers(currentState).size();
 
     if (numCheckers == 0) {
         if(canEnemyMove) {
@@ -193,12 +204,14 @@ void Game::processMove(Move& currentMove) {
     if (pendingPromotion()) {
         return;
     }
-    updateGameStatus();
-    currentMove.gameStatusAfterMove = status_;
     movesHistory_.push_back(currentMove);
+    updateGameStatus();
+    movesHistory_.back().gameStatusAfterMove = status_;
     switchPlayer();
     mediator_->onGameStateChanged(gameState());
 }
+
+bool Game::pendingPromotion() const { return pendingPromotionMove_.has_value(); }
 
 void Game::promotePawn(PieceType type)
 {
@@ -221,10 +234,9 @@ GameState Game::gameState() const {
     return {currentPlayer_, status_, board_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())};
 }
 
-bool Game::isGameOngoing() const
-{
-    return ONGOING_GAME_STATUSES_MASK & (1 << static_cast<int>(status_));
-}
+std::optional<DrawCause> Game::drawCause() const { return drawCause_; }
+
+std::optional<Color> Game::winner() const { return winner_; }
 
 void Game::requestPossibleMoves(const Coordinate &coord)
 {

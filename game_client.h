@@ -22,7 +22,6 @@ public:
     void restartGame();
 
 protected:
-    // GameStatus cachedGameStatus_ = GameStatus::NEW;
     bool cachedPendingPromotion_ = false;
     bool isGameOngoing_ = true;
     Color cachedCurrentPlayer_ = Color::WHITE;
@@ -30,7 +29,7 @@ protected:
     std::vector<Move> cachedPossibleMoves_;
     std::optional<Color> winner_;
     std::optional<DrawCause> drawCause_;
-    std::array<std::optional<std::pair<Color, PieceType>>, 64> cachedPieces_;
+    Board cachedBoard_;
 };
 
 #endif // GAME_CLIENT_H

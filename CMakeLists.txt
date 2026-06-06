@@ -15,7 +15,6 @@ add_library(chess_core STATIC
     MoveType.h
     pieceType.h
     gameStatus.h
-    pieceUtils.h
     grid.h
     game_state.h
     drawCause.h
@@ -51,6 +50,7 @@ qt_add_qml_module(appchess
        boardmodel.h      boardmodel.cpp
        gamecontroller.h  gamecontroller.cpp
        chessEnums.h
+       pieceUtils.h pieceUtils.cpp
    RESOURCES
        qml/pieces/w_bishop.svg
        qml/pieces/w_king.svg
@@ -64,7 +64,6 @@ qt_add_qml_module(appchess
        qml/pieces/b_pawn.svg
        qml/pieces/b_queen.svg
        qml/pieces/b_rook.svg
-       SOURCES move_generator.cpp
 )
 
 target_link_libraries(appchess PRIVATE chess_core Qt6::Quick)
