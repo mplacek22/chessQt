@@ -7,14 +7,46 @@ GameController::GameController(QObject* parent): QObject(parent),
 
 BoardModel *GameController::board() const { return boardModel_.get(); }
 
+Chess::Enums::Color GameController::currentPlayer() const {
+    return cachedCurrentPlayer_ == Color::WHITE ? Chess::Enums::Color::WHITE : Chess::Enums::Color::BLACK;
+}
+
+MovePairList GameController::movesList() const {
+    return movesList_;
+}
+
+bool GameController::pendingPromotion() const {
+    return cachedPendingPromotion_;
+}
+
+QString GameController::status() const {
+    return PieceUtils::gameStatusToString(cachedGameStatus_);
+}
+
+int GameController::winner() const
+{
+    if (winner_.has_value()) {
+        return static_cast<int>(winner_.value());
+    }
+    return -1;
+}
+
+QString GameController::drawCause() const
+{
+    if (drawCause_.has_value()) {
+        return PieceUtils::drawCauseToString(drawCause_.value());
+    }
+    return "";
+}
+
 void GameController::startGame() {
-    GameClient::startGame();
+    IGameClient::startGame();
     emit statusChanged();
     notifyBoardModel();
 }
 
 void GameController::restartGame() {
-    GameClient::restartGame();
+    IGameClient::restartGame();
     clearSelection();
     clearMoves();
     emit statusChanged();
@@ -23,7 +55,7 @@ void GameController::restartGame() {
 
 void GameController::promotePawn(Chess::Enums::PieceType pieceType)
 {
-    GameClient::promotePawn(static_cast<PieceType>(pieceType));
+    IGameClient::promotePawn(static_cast<PieceType>(pieceType));
     clearSelection();
 
     emit pendingPromotionChanged();
@@ -66,9 +98,10 @@ QString GameController::svgPathForSquare(int sq) const
     return piece ? PieceUtils::imageSource(piece->color, piece->type) : "";
 }
 
+
 void GameController::possibleMovesCalculated(std::vector<Move> moves)
 {
-    GameClient::possibleMovesCalculated(moves);
+    IGameClient::possibleMovesCalculated(moves);
     highlightedSquares_.clear();
     for (const auto& move : moves)
         highlightedSquares_.insert(coordinateToIndex(move.destination));
@@ -78,7 +111,7 @@ void GameController::possibleMovesCalculated(std::vector<Move> moves)
 void GameController::onGameStateChanged(const GameState &gameState)
 {
     if (cachedPendingPromotion_) return;
-    GameClient::onGameStateChanged(gameState);
+    IGameClient::onGameStateChanged(gameState);
     clearSelection();
     if(gameState.lastMove && !cachedPendingPromotion_) {
         appendMove(gameState.lastMove.value());
@@ -90,65 +123,20 @@ void GameController::onGameStateChanged(const GameState &gameState)
 
 void GameController::onGameWon(Color winner)
 {
-    GameClient::onGameWon(winner);
+    IGameClient::onGameWon(winner);
     emit statusChanged();
 }
 
 void GameController::onGameDrawn(DrawCause drawCause)
 {
-    GameClient::onGameDrawn(drawCause);
+    IGameClient::onGameDrawn(drawCause);
     emit statusChanged();
 }
 
-Chess::Enums::Color GameController::currentPlayer() const {
-    return cachedCurrentPlayer_ == Color::WHITE ? Chess::Enums::Color::WHITE : Chess::Enums::Color::BLACK;
-}
-
-QString GameController::status() const {
-    return PieceUtils::gameStatusToString(cachedGameStatus_);
-}
-
-
-void GameController::notifyBoardModel()
+void GameController::onPendingPromotionChanged(bool pendingPromotion)
 {
-    emit boardModel_->dataChanged(
-        boardModel_->index(0),
-        boardModel_->index(63),
-        { BoardModel::IsSelectedRole, BoardModel::IsHighlightedRole, BoardModel::SvgPathRole }
-        );
-}
-
-void GameController::appendMove(const Move& move)
-{
-    const QString san = QString::fromStdString(san::toSAN(move));
-    if (move.player == Color::WHITE){
-        QVariantMap pair;
-        pair["white"] = san;
-        pair["black"] = "";
-        movesList_.append(pair);
-    }
-    else {
-       movesList_.last()["black"] = san;
-    }
-    emit movesChanged();
-}
-
-Coordinate GameController::indexToCoordinate(int index)
-{
-    int file = index % 8;
-    int rank = Board::BOARD_SIZE - 1 - (index / 8);
-    return {rank, file};
-}
-
-int GameController::coordinateToIndex(const Coordinate &coordinate)
-{
-    return (Board::BOARD_SIZE - 1 - coordinate.rank) * Board::BOARD_SIZE + coordinate.file;
-}
-
-void GameController::clearMoves()
-{
-    movesList_.clear();
-    emit movesChanged();
+    IGameClient::onPendingPromotionChanged(pendingPromotion);
+    emit pendingPromotionChanged();
 }
 
 void GameController::selectSourceSquare(int index)
@@ -183,32 +171,44 @@ void GameController::clearSelection()
     notifyBoardModel();
 }
 
-MovePairList GameController::movesList() const {
-    return movesList_;
-}
-
-bool GameController::pendingPromotion() const {
-    return cachedPendingPromotion_;
-}
-
-int GameController::winner() const
+void GameController::notifyBoardModel()
 {
-    if (winner_.has_value()) {
-        return static_cast<int>(winner_.value());
+    emit boardModel_->dataChanged(
+        boardModel_->index(0),
+        boardModel_->index(63),
+        { BoardModel::IsSelectedRole, BoardModel::IsHighlightedRole, BoardModel::SvgPathRole }
+        );
+}
+
+void GameController::clearMoves()
+{
+    movesList_.clear();
+    emit movesChanged();
+}
+
+void GameController::appendMove(const Move& move)
+{
+    const QString san = QString::fromStdString(san::toSAN(move));
+    if (move.player == Color::WHITE){
+        QVariantMap pair;
+        pair["white"] = san;
+        pair["black"] = "";
+        movesList_.append(pair);
     }
-    return -1;
-}
-
-QString GameController::drawCause() const
-{
-    if (drawCause_.has_value()) {
-        return PieceUtils::drawCauseToString(drawCause_.value());
+    else {
+       movesList_.last()["black"] = san;
     }
-    return "";
+    emit movesChanged();
 }
 
-void GameController::onPendingPromotionChanged(bool pendingPromotion)
+Coordinate GameController::indexToCoordinate(int index)
 {
-    GameClient::onPendingPromotionChanged(pendingPromotion);
-    emit pendingPromotionChanged();
+    int file = index % 8;
+    int rank = Board::BOARD_SIZE - 1 - (index / 8);
+    return {rank, file};
+}
+
+int GameController::coordinateToIndex(const Coordinate &coordinate)
+{
+    return (Board::BOARD_SIZE - 1 - coordinate.rank) * Board::BOARD_SIZE + coordinate.file;
 }

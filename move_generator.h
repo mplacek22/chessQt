@@ -10,6 +10,16 @@
  *
  */
 namespace move_generator {
+
+    /**
+     * @brief Movement directions for each non-pawn piece type.
+     *
+     * Maps each piece type to its set of possible movement directions, where each
+     * direction is a {rank_delta, file_delta} pair.
+     *
+     * @note Pawns are omitted as their movement is context-dependent (color, first move,
+     * captures) and handled separately.
+     */
     const std::unordered_map<PieceType, std::array<std::array<int, 2>, 28> > MOVE_DIRECTIONS = {
         {PieceType::BISHOP, {{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}}},
         {
@@ -39,6 +49,12 @@ namespace move_generator {
         {PieceType::ROOK, {{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}}}
     };
 
+    /**
+     * @brief Bitmask identifying sliding piece types.
+     *
+     * A piece is sliding if it can move any number of squares along a direction
+     * until blocked.
+     */
     constexpr int SLIDING_PIECE_MASK =
             (1 << static_cast<int>(PieceType::BISHOP)) |
             (1 << static_cast<int>(PieceType::QUEEN)) |

@@ -1,15 +1,22 @@
-#ifndef COLLEAGUE_H
-#define COLLEAGUE_H
+#pragma once
 
 #include "i_game_mediator.h"
 
-
-class Colleague
-{
+/**
+ * @class Colleague
+ * @brief Base class for objects participating in mediator communication.
+ */
+class Colleague {
 public:
-    void setMediator(IGameMediator* mediator);
-protected:
-    IGameMediator* mediator_ = nullptr;
-};
+    virtual ~Colleague() = default;
 
-#endif // COLLEAGUE_H
+    /**
+    * @brief Assigns the mediator used by this object.
+    * @param mediator Pointer to the game mediator.
+     */
+    void setMediator(IGameMediator *mediator);
+
+protected:
+    /// Pointer to the associated game mediator.
+    IGameMediator *mediator_ = nullptr;
+};

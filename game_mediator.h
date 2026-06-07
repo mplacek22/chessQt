@@ -1,36 +1,56 @@
-#ifndef GAME_MEDIATOR_H
-#define GAME_MEDIATOR_H
+#pragma once
 
 #include "Game.h"
 #include "game_client.h"
 #include "i_game_mediator.h"
 
-
-class GameMediator : public IGameMediator {
+/**
+* @class GameMediator
+* @brief Concrete mediator that wires a @c Game instance to a @c GameClient.
+*/
+class GameMediator final : public IGameMediator {
 public:
-    GameMediator(Game* game, GameClient* gameClient)
-        : game_(game), gameClient_(gameClient) {
-        game_->setMediator(this);
-        gameClient_->setMediator(this);
-    }
+    /**
+     * @brief Constructs the mediator and registers it with both collaborators.
+     *
+     * @param game Non-owning pointer to the game logic instance.
+     * @param gameClient Non-owning pointer to the presentation layer instance.
+     */
+    GameMediator(Game *game, IGameClient *gameClient);
 
-    // UI -> game
+    // Requests
+    /// @copydoc IGameMediator::onPromotionRequested
     void onPromotionRequested(PieceType type) override;
+
+    /// @copydoc IGameMediator::onRestartRequested
     void onRestartRequested() override;
+
+    /// @copydoc IGameMediator::onStartRequested
     void onStartRequested() override;
+
+    /// @copydoc IGameMediator::onMoveRequested
     void onMoveRequested(Move &move) override;
 
-    // game -> UI
-    void onGameStateChanged(const GameState &state) override;
-    void onPossibleMovesCalculated(const std::vector<Move> &moves) override;
-    void onGameWon(Color winner) override;
-    void onGameDrawn(DrawCause cause) override;
-    void onPromotionPending(bool isPromotionPending) override;
+    /// @copydoc IGameMediator::onPossibleMovesRequested
     void onPossibleMovesRequested(Coordinate coord) override;
 
-private:
-    Game* game_;
-    GameClient* gameClient_;
-};
+    // Notifications
+    /// @copydoc IGameMediator::onGameStateChanged
+    void onGameStateChanged(const GameState &state) override;
 
-#endif // GAME_MEDIATOR_H
+    /// @copydoc IGameMediator::onPossibleMovesCalculated
+    void onPossibleMovesCalculated(const std::vector<Move> &moves) override;
+
+    /// @copydoc IGameMediator::onGameWon
+    void onGameWon(Color winner) override;
+
+    /// @copydoc IGameMediator::onGameDrawn
+    void onGameDrawn(DrawCause cause) override;
+
+    /// @copydoc IGameMediator::onPromotionPending
+    void onPromotionPending(bool isPromotionPending) override;
+
+private:
+    Game *game_;
+    IGameClient *gameClient_;
+};

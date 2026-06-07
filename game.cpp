@@ -17,15 +17,7 @@ void Game::restart() {
     start();
 }
 
-const Board &Game::board() const { return board_; }
-
-Color Game::currentPlayer() const { return currentPlayer_; }
-
-GameStatus Game::status() const { return status_; }
-
-const std::vector<Move> &Game::movesHistory() const { return movesHistory_; }
-
-void Game::executeMove(const Move& move) {
+void Game::executeMove(const Move &move) {
     board_.move(move.source, move.destination);
     board_.at(move.destination)->hasMoved = true;
     switch (move.moveType) {
@@ -37,7 +29,7 @@ void Game::executeMove(const Move& move) {
         }
         case MoveType::PROMOTION: {
             setPendingPromotionMove(move);
-            if(move.promotionPieceType) {
+            if (move.promotionPieceType) {
                 promotePawn(move.promotionPieceType.value());
             }
             break;
@@ -73,7 +65,7 @@ void Game::updateGameStatus() {
         return;
     }
 
-    if(isInsufficientMaterial()) {
+    if (isInsufficientMaterial()) {
         setDraw(INSUFFICIENT_MATERIAL);
         return;
     }
@@ -88,10 +80,9 @@ void Game::updateGameStatus() {
     const auto numCheckers = move_generator::computeCheckers(currentState).size();
 
     if (numCheckers == 0) {
-        if(canEnemyMove) {
+        if (canEnemyMove) {
             status_ = GameStatus::IN_PROGRESS;
-        }
-        else {
+        } else {
             setDraw(DrawCause::STALEMATE);
         }
         return;
@@ -103,37 +94,32 @@ void Game::updateGameStatus() {
     }
     if (numCheckers == 1) {
         status_ = GameStatus::SINGLE_CHECK;
-    }
-    else if (numCheckers == 2) {
+    } else if (numCheckers == 2) {
         status_ = GameStatus::DOUBLE_CHECK;
     }
 }
 
-void Game::updateWinner()
-{
-    if (status_ == GameStatus::CHECK_MATE){
+void Game::updateWinner() {
+    if (status_ == GameStatus::CHECK_MATE) {
         winner_ = currentPlayer_;
         mediator_->onGameWon(winner_.value());
     }
 }
 
-bool Game::isFiftyMoveRule() const
-{
+bool Game::isFiftyMoveRule() const {
     return movesHistory_.size() >= 50;
 }
 
-bool Game::isRepetition() const
-{
+bool Game::isRepetition() const {
     return false;
 }
 
-bool Game::isInsufficientMaterial() const
-{
+bool Game::isInsufficientMaterial() const {
     struct PieceCounts {
         int knights = 0;
-        int total   = 0;
+        int total = 0;
         bool hasBishopOnLight = false;
-        bool hasBishopOnDark  = false;
+        bool hasBishopOnDark = false;
     };
 
     PieceCounts white, black;
@@ -143,23 +129,23 @@ bool Game::isInsufficientMaterial() const
             const auto piece = board_.at({r, f});
             if (!piece) continue;
 
-            auto&[knights, total, hasBishopOnLight, hasBishopOnDark] = piece->color == Color::WHITE ? white : black;
+            auto &[knights, total, hasBishopOnLight, hasBishopOnDark] = piece->color == Color::WHITE ? white : black;
 
             switch (piece->type) {
-            case PieceType::PAWN:
-            case PieceType::ROOK:
-            case PieceType::QUEEN:
-                return false; // any major piece (P, R, Q) -> sufficient material
-            case PieceType::KNIGHT:
-                ++total;
-                ++knights;
-                break;
-            case PieceType::BISHOP:
-                ++total;
-                (Board::isLightSquare(r, f) ? hasBishopOnLight : hasBishopOnDark) = true;
-                break;
-            default:
-                break;
+                case PieceType::PAWN:
+                case PieceType::ROOK:
+                case PieceType::QUEEN:
+                    return false; // any major piece (P, R, Q) -> sufficient material
+                case PieceType::KNIGHT:
+                    ++total;
+                    ++knights;
+                    break;
+                case PieceType::BISHOP:
+                    ++total;
+                    (Board::isLightSquare(r, f) ? hasBishopOnLight : hasBishopOnDark) = true;
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -169,12 +155,13 @@ bool Game::isInsufficientMaterial() const
 
     // K + minor vs K
     if ((white.total == 1 && black.total == 0) ||
-        (black.total == 1 && white.total == 0)) return true;
+        (black.total == 1 && white.total == 0))
+        return true;
 
     // KB vs KB on the same square color
     const bool sameColorBishops =
-        (white.hasBishopOnLight && black.hasBishopOnLight) ||
-        (white.hasBishopOnDark  && black.hasBishopOnDark);
+            (white.hasBishopOnLight && black.hasBishopOnLight) ||
+            (white.hasBishopOnDark && black.hasBishopOnDark);
 
     if (white.total == 1 && black.total == 1 && sameColorBishops) return true;
 
@@ -185,21 +172,19 @@ Color Game::oppositeColor(const Color color) {
     return color == Color::WHITE ? Color::BLACK : Color::WHITE;
 }
 
-void Game::setDraw(DrawCause drawCause)
-{
+void Game::setDraw(DrawCause drawCause) {
     status_ = GameStatus::DRAW;
     drawCause_ = drawCause;
     mediator_->onGameDrawn(drawCause);
 }
 
 
-void Game::setPendingPromotionMove(std::optional<Move> moveOpt)
-{
+void Game::setPendingPromotionMove(const std::optional<Move> &moveOpt) {
     pendingPromotionMove_ = moveOpt;
     mediator_->onPromotionPending(moveOpt.has_value());
 }
 
-void Game::processMove(Move& currentMove) {
+void Game::processMove(const Move &currentMove) {
     executeMove(currentMove);
     if (pendingPromotion()) {
         return;
@@ -213,12 +198,11 @@ void Game::processMove(Move& currentMove) {
 
 bool Game::pendingPromotion() const { return pendingPromotionMove_.has_value(); }
 
-void Game::promotePawn(PieceType type)
-{
+void Game::promotePawn(PieceType type) {
     if (!pendingPromotion()) {
         return;
     }
-    board_.set(pendingPromotionMove_.value().destination, { type, currentPlayer_ });
+    board_.set(pendingPromotionMove_.value().destination, {type, currentPlayer_});
     updateGameStatus();
     if (pendingPromotionMove_.has_value()) {
         pendingPromotionMove_.value().gameStatusAfterMove = status_;
@@ -231,15 +215,12 @@ void Game::promotePawn(PieceType type)
 }
 
 GameState Game::gameState() const {
-    return {currentPlayer_, status_, board_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())};
+    return {
+        currentPlayer_, status_, board_, movesHistory_.empty() ? std::nullopt : std::optional(movesHistory_.back())
+    };
 }
 
-std::optional<DrawCause> Game::drawCause() const { return drawCause_; }
-
-std::optional<Color> Game::winner() const { return winner_; }
-
-void Game::requestPossibleMoves(const Coordinate &coord)
-{
-    auto moves = move_generator::calculatePossibleMoves(coord, gameState());
+void Game::requestPossibleMoves(const Coordinate &coord) const {
+    const auto moves = move_generator::calculatePossibleMoves(coord, gameState());
     mediator_->onPossibleMovesCalculated(moves);
 }
