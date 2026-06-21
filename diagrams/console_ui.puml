@@ -1,0 +1,363 @@
+@startuml
+class "InvalidSanException" as C_0012240543444951965339
+class C_0012240543444951965339 {
++InvalidSanException(const std::string & msg) : void
+__
+}
+enum "Color" as C_0003769135706557701272
+enum C_0003769135706557701272 {
+WHITE
+BLACK
+}
+enum "DrawCause" as C_0005465509528876370002
+enum C_0005465509528876370002 {
+STALEMATE
+INSUFFICIENT_MATERIAL
+FIFTY_MOVE_RULE
+THREEFOLD_REPETITION
+FIVEFOLD_REPETITION
+AGREED
+}
+class "Coordinate" as C_0002473749708249590475
+class C_0002473749708249590475 {
++operator==(const Coordinate & other) const : bool
+__
++file : int
++rank : int
+}
+enum "MoveType" as C_0004201687326288072348
+enum C_0004201687326288072348 {
+NORMAL
+CAPTURE
+PROMOTION
+ENPASSANT
+CASTLE_KINGSIDE
+CASTLE_QUEENSIDE
+PAWN_DOUBLE_NORMAL
+}
+enum "PieceType" as C_0011837307862571174541
+enum C_0011837307862571174541 {
+BISHOP
+KING
+KNIGHT
+PAWN
+QUEEN
+ROOK
+}
+enum "GameStatus" as C_0013302321448474623153
+enum C_0013302321448474623153 {
+NEW
+IN_PROGRESS
+SINGLE_CHECK
+DOUBLE_CHECK
+CHECK_MATE
+DRAW
+}
+class "Move" as C_0004007104907368024212
+class C_0004007104907368024212 {
++Move(const Coordinate source, const Coordinate destination, const Color currentPlayer) : void
+__
++destination : Coordinate
++gameStatusAfterMove : GameStatus
++isAmbiguous : bool
++isCapture : bool
++moveType : MoveType
++movingPieceType : PieceType
++player : Color
++promotionPieceType : std::optional<PieceType>
++source : Coordinate
+}
+class "Grid<T,std::size_t Rows=8,std::size_t Cols=8>" as C_0015597186919403043605
+class C_0015597186919403043605 {
++Grid() = default : void
++Grid(const Grid<T,Rows,Cols> &) = default : void
++Grid(Grid<T,Rows,Cols> &&) = default : void
+..
++operator=(const Grid<T,Rows,Cols> &) = default : Grid<T,Rows,Cols> &
++operator=(Grid<T,Rows,Cols> &&) = default : Grid<T,Rows,Cols> &
+..
++at(const int row, const int col) const : const T &
++at(const int row, const int col) : T &
+{static} +cellsCount() noexcept : std::size_t
++clear() : void
+{static} +inBounds(const int row, const int col) : bool
+{static} #index(const int row, const int col) : std::size_t
++move(const int rowSrc, const int colSrc, const int rowDest, const int colDest) : void
++set(const int row, const int col, T val) : void
+__
+{static} +CELLS_COUNT : const std::size_t
+#data : std::array<T,Rows * Cols>
+}
+class "Piece" as C_0012072903533323154853
+class C_0012072903533323154853 {
++Piece(const PieceType pieceType, const Color color) : void
+__
++color : Color
++hasMoved : bool
++type : PieceType
+}
+class "Grid<std::optional<Piece>>" as C_0017831906191313009638
+class C_0017831906191313009638 {
+__
+}
+class "Board" as C_0010358599209595726571
+class C_0010358599209595726571 {
++Board() : void
++Board(const Board &) = default : void
++Board(Board &&) = default : void
+..
++operator=(const Board &) = default : Board &
++operator=(Board &&) = default : Board &
+..
++at(const Coordinate & coordinate) : std::optional<Piece> &
++at(const Coordinate & coordinate) const : const std::optional<Piece> &
++findKing(Color color) const : Coordinate
+{static} +inBounds(const Coordinate & coord) : bool
+-initialize() : void
++isEnemy(const Coordinate & coord, Color color) const : bool
++isFriendly(const Coordinate & coord, Color color) const : bool
+{static} +isLightSquare(int rank, int file) : bool
++isPathClear(const Coordinate & source, const Coordinate & destination) const : bool
++move(const Coordinate & source, const Coordinate & destination) : void
++restart() : void
++set(const Coordinate & coordinate, const Piece & piece) : void
++set(const Coordinate & coordinate, const std::optional<Piece> piece) : void
+__
+{static} +BOARD_SIZE : const int
+}
+class "GameState" as C_0003981560271957445032
+class C_0003981560271957445032 {
++GameState(const Color player, const GameStatus gameStatus, const Board & board, const std::optional<Move> & lastMove = std::nullopt) : void
+__
++board : const Board &
++currentPlayer : Color
++gameStatus : GameStatus
++lastMove : std::optional<Move>
+}
+abstract "IGameMediator" as C_0004226400438682174931
+abstract C_0004226400438682174931 {
++~IGameMediator() constexpr = default : void
+..
+{abstract} +onGameDrawn(DrawCause cause) = 0 : void
+{abstract} +onGameStateChanged(const GameState & state) = 0 : void
+{abstract} +onGameWon(Color winner) = 0 : void
+{abstract} +onMoveRequested(Move & move) = 0 : void
+{abstract} +onPossibleMovesCalculated(const std::vector<Move> & moves) = 0 : void
+{abstract} +onPossibleMovesRequested(Coordinate coord) = 0 : void
+{abstract} +onPromotionPending(bool isPromotionPending) = 0 : void
+{abstract} +onPromotionRequested(PieceType type) = 0 : void
+{abstract} +onRestartRequested() = 0 : void
+{abstract} +onStartRequested() = 0 : void
+__
+}
+class "Colleague" as C_0014097515694997472292
+class C_0014097515694997472292 {
++~Colleague() constexpr = default : void
+..
++setMediator(IGameMediator * mediator) : void
+__
+#mediator_ : IGameMediator *
+}
+class "IGameClient" as C_0016746862812216595853
+class C_0016746862812216595853 {
++IGameClient() = default : void
+..
+#isGameOngoing() const : bool
++onGameDrawn(DrawCause drawCause) : void
++onGameStateChanged(const GameState & gameState) : void
++onGameWon(Color winner) : void
++onPendingPromotionChanged(bool pendingPromotion) : void
++possibleMovesCalculated(std::vector<Move> moves) : void
++promotePawn(PieceType pieceType) : void
++restartGame() : void
++startGame() : void
+__
+{static} -ONGOING_GAME_STATUSES_MASK : const int
+#cachedBoard_ : Board
+#cachedCurrentPlayer_ : Color
+#cachedGameStatus_ : GameStatus
+#cachedPendingPromotion_ : bool
+#cachedPossibleMoves_ : std::vector<Move>
+#drawCause_ : std::optional<DrawCause>
+#winner_ : std::optional<Color>
+}
+class "ConsoleGameUI" as C_0015572196856795171978
+class C_0015572196856795171978 {
+-displayBoard() const : void
+-displayCurrentPlayer() const : void
+{static} -displayEndGameOptions() : void
+-displayStatus() const : void
+{static} -drawCauseToString(DrawCause drawCause) : std::string
+{static} -gameStatusToString(GameStatus gameStatus) : std::string
++onGameDrawn(DrawCause drawCause) : void
++onGameStateChanged(const GameState & gameState) : void
++onGameWon(Color winner) : void
++onPendingPromotionChanged(bool pendingPromotion) : void
+{static} -pieceChar(PieceType type, Color color) : char
++possibleMovesCalculated(std::vector<Move> moves) : void
+{static} -promptCoordinate(const std::string & prompt) : PromptOutcome
+-promptEndGame() const : LoopAction
++run() : void
+-runGameLoop() : LoopAction
+__
+{static} -PROMOTION_PIECES : const std::array<PieceType,4>
+}
+enum "ConsoleGameUI::PromptResult" as C_0001424814967177342759
+enum C_0001424814967177342759 {
+COORDINATE
+QUIT
+RESTART
+INVALID
+}
+enum "ConsoleGameUI::LoopAction" as C_0017102549060850368684
+enum C_0017102549060850368684 {
+QUIT
+RESTART
+}
+class "ConsoleGameUI::PromptOutcome" as C_0006291790658696054666
+class C_0006291790658696054666 {
+__
++coordinate : std::optional<Coordinate>
++result : PromptResult
+}
+class "Game" as C_0013071880978633431303
+class C_0013071880978633431303 {
++Game() : void
+..
+-executeMove(const Move & move) : void
+-gameState() const : GameState
+-isFiftyMoveRule() const : bool
+-isInsufficientMaterial() const : bool
+-isRepetition() const : bool
+{static} -oppositeColor(Color color) : Color
+-pendingPromotion() const : bool
++processMove(const Move & currentMove) : void
++promotePawn(PieceType type) : void
++requestPossibleMoves(const Coordinate & coord) const : void
++restart() : void
+-setDraw(DrawCause drawCause) : void
+-setPendingPromotionMove(const std::optional<Move> & moveOpt) : void
++start() : void
+-switchPlayer() : void
+-updateGameStatus() : void
+-updateWinner() : void
+__
+-board_ : Board
+-currentPlayer_ : Color
+-drawCause_ : std::optional<DrawCause>
+-movesHistory_ : std::vector<Move>
+-pendingPromotionMove_ : std::optional<Move>
+-status_ : GameStatus
+-winner_ : std::optional<Color>
+}
+class "GameMediator" as C_0015112108979621633422
+class C_0015112108979621633422 {
++GameMediator(Game * game, IGameClient * gameClient) : void
+..
++onGameDrawn(DrawCause cause) : void
++onGameStateChanged(const GameState & state) : void
++onGameWon(Color winner) : void
++onMoveRequested(Move & move) : void
++onPossibleMovesCalculated(const std::vector<Move> & moves) : void
++onPossibleMovesRequested(Coordinate coord) : void
++onPromotionPending(bool isPromotionPending) : void
++onPromotionRequested(PieceType type) : void
++onRestartRequested() : void
++onStartRequested() : void
+__
+-gameClient_ : IGameClient *
+-game_ : Game *
+}
+C_0004007104907368024212 o-- C_0002473749708249590475 : +source
+C_0004007104907368024212 o-- C_0002473749708249590475 : +destination
+C_0004007104907368024212 o-- C_0004201687326288072348 : +moveType
+C_0004007104907368024212 o-- C_0011837307862571174541 : +promotionPieceType
+C_0004007104907368024212 o-- C_0011837307862571174541 : +movingPieceType
+C_0004007104907368024212 o-- C_0003769135706557701272 : +player
+C_0004007104907368024212 o-- C_0013302321448474623153 : +gameStatusAfterMove
+C_0012072903533323154853 o-- C_0011837307862571174541 : +type
+C_0012072903533323154853 o-- C_0003769135706557701272 : +color
+C_0017831906191313009638 ..|> C_0015597186919403043605
+C_0010358599209595726571 ..> C_0002473749708249590475
+C_0010358599209595726571 ..> C_0012072903533323154853
+C_0010358599209595726571 ..> C_0003769135706557701272
+C_0017831906191313009638 <|-- C_0010358599209595726571
+C_0003981560271957445032 o-- C_0003769135706557701272 : +currentPlayer
+C_0003981560271957445032 o-- C_0013302321448474623153 : +gameStatus
+C_0003981560271957445032 o-- C_0004007104907368024212 : +lastMove
+C_0003981560271957445032 --> C_0010358599209595726571 : +board
+C_0004226400438682174931 ..> C_0004007104907368024212
+C_0004226400438682174931 ..> C_0011837307862571174541
+C_0004226400438682174931 ..> C_0002473749708249590475
+C_0004226400438682174931 ..> C_0003981560271957445032
+C_0004226400438682174931 ..> C_0003769135706557701272
+C_0004226400438682174931 ..> C_0005465509528876370002
+C_0014097515694997472292 --> C_0004226400438682174931 : #mediator_
+C_0016746862812216595853 ..> C_0003981560271957445032
+C_0016746862812216595853 ..> C_0011837307862571174541
+C_0016746862812216595853 o-- C_0003769135706557701272 : #cachedCurrentPlayer_
+C_0016746862812216595853 o-- C_0013302321448474623153 : #cachedGameStatus_
+C_0016746862812216595853 o-- C_0004007104907368024212 : #cachedPossibleMoves_
+C_0016746862812216595853 o-- C_0003769135706557701272 : #winner_
+C_0016746862812216595853 o-- C_0005465509528876370002 : #drawCause_
+C_0016746862812216595853 o-- C_0010358599209595726571 : #cachedBoard_
+C_0014097515694997472292 <|-- C_0016746862812216595853
+C_0015572196856795171978 ..> C_0004007104907368024212
+C_0015572196856795171978 ..> C_0003981560271957445032
+C_0015572196856795171978 ..> C_0003769135706557701272
+C_0015572196856795171978 ..> C_0005465509528876370002
+C_0015572196856795171978 ..> C_0006291790658696054666
+C_0015572196856795171978 ..> C_0013302321448474623153
+C_0015572196856795171978 ..> C_0017102549060850368684
+C_0015572196856795171978 --> C_0011837307862571174541 : -PROMOTION_PIECES
+C_0016746862812216595853 <|-- C_0015572196856795171978
+C_0001424814967177342759 --+ C_0015572196856795171978
+C_0017102549060850368684 --+ C_0015572196856795171978
+C_0006291790658696054666 --+ C_0015572196856795171978
+C_0006291790658696054666 o-- C_0001424814967177342759 : +result
+C_0006291790658696054666 o-- C_0002473749708249590475 : +coordinate
+C_0013071880978633431303 ..> C_0011837307862571174541
+C_0013071880978633431303 ..> C_0002473749708249590475
+C_0013071880978633431303 ..> C_0003981560271957445032
+C_0013071880978633431303 o-- C_0003769135706557701272 : -currentPlayer_
+C_0013071880978633431303 o-- C_0010358599209595726571 : -board_
+C_0013071880978633431303 o-- C_0004007104907368024212 : -movesHistory_
+C_0013071880978633431303 o-- C_0013302321448474623153 : -status_
+C_0013071880978633431303 o-- C_0004007104907368024212 : -pendingPromotionMove_
+C_0013071880978633431303 o-- C_0003769135706557701272 : -winner_
+C_0013071880978633431303 o-- C_0005465509528876370002 : -drawCause_
+C_0014097515694997472292 <|-- C_0013071880978633431303
+C_0015112108979621633422 ..> C_0011837307862571174541
+C_0015112108979621633422 ..> C_0004007104907368024212
+C_0015112108979621633422 ..> C_0002473749708249590475
+C_0015112108979621633422 ..> C_0003981560271957445032
+C_0015112108979621633422 ..> C_0003769135706557701272
+C_0015112108979621633422 ..> C_0005465509528876370002
+C_0015112108979621633422 --> C_0013071880978633431303 : -game_
+C_0015112108979621633422 --> C_0016746862812216595853 : -gameClient_
+C_0004226400438682174931 <|-- C_0015112108979621633422
+hide empty members
+remove @unlinked
+remove C_0015597186919403043605
+remove C_0017831906191313009638
+remove C_0004226400438682174931
+remove C_0014097515694997472292
+remove C_0015112108979621633422
+remove C_0002473749708249590475
+remove C_0012072903533323154853
+remove C_0010358599209595726571
+remove C_0004007104907368024212
+remove C_0004201687326288072348
+remove C_0013071880978633431303
+remove C_0012240543444951965339
+remove C_0003981560271957445032
+remove C_0012072903533323154853
+remove C_0003769135706557701272
+remove C_0005465509528876370002
+remove C_0013302321448474623153
+remove C_0011837307862571174541
+scale 0.8
+
+'Generated with clang-uml, version 0.6.2
+'LLVM version clang version 20.1.7 (https://github.com/llvm/llvm-project.git 6146a88f60492b520a36f8f8f3231e15f3cc6082)
+@enduml

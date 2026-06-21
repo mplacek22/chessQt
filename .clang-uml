@@ -1,0 +1,144 @@
+compilation_database_dir: build/Desktop_Qt_6_10_2_MinGW_64_bit-Debugowa
+output_directory: diagrams
+
+diagrams:
+
+  core_logic:
+    type: class
+    glob:
+      - "C:/Users/User/QtProjects/chess/game.cpp"
+      - "C:/Users/User/QtProjects/chess/board.cpp"
+      - "C:/Users/User/QtProjects/chess/move_generator.cpp"
+      - "C:/Users/User/QtProjects/chess/san.cpp"
+    exclude:
+      namespaces:
+        - std
+    plantuml:
+      after:
+        - "hide empty members"
+        - "remove @unlinked"
+        - "remove C_0004226400438682174931"
+        - "remove C_0014097515694997472292"
+        - "scale 0.8"
+
+  mediator:
+    type: class
+    glob:
+      - "C:/Users/User/QtProjects/chess/game_mediator.cpp"
+      - "C:/Users/User/QtProjects/chess/game_client.cpp"
+      - "C:/Users/User/QtProjects/chess/colleague.cpp"
+      - "C:/Users/User/QtProjects/chess/game.cpp"
+      - "C:/Users/User/QtProjects/chess/gamecontroller.cpp"
+      - "C:/Users/User/QtProjects/chess/consolegameui.cpp"
+    exclude:
+      namespaces:
+        - std
+    plantuml:
+      after:
+        - "hide empty members"
+        - "remove @unlinked"
+        - "remove C_0015597186919403043605"
+        - "remove C_0017831906191313009638"
+        - "remove C_0002473749708249590475"
+        - "remove C_0012072903533323154853"
+        - "remove C_0010358599209595726571"
+        - "remove C_0004007104907368024212"
+        - "remove C_0004201687326288072348"
+        - "remove C_0008462162920991030913"
+        - "remove C_0000507335525795185907"
+        - "remove C_0008228684837359439775"
+        - "remove C_0000939832657542976143"
+        - "remove C_0009339855523920138570"
+        - "remove C_0012152411478268637853"
+        - "remove C_0016541358007062255304"
+        - "remove C_0007432042602458984129"
+        - "remove C_0003237154844547202210"
+        - "remove C_0015908851380595709172"
+        - "remove C_0007216772209810666782"
+        - "remove C_0009009972265594734863"
+        - "remove C_0011818391262394882322"
+        - "remove C_0006489536623627035397"
+        - "remove C_0012718323011887886296"
+        - "remove C_0014686597791932058935"
+        - "remove C_0017095635536674898843"
+        - "remove C_0002066311854149497038"
+        - "remove C_0005671903344246021186"
+        - "remove C_0001694078030712452619"
+        - "remove C_0001424814967177342759"
+        - "remove C_0017102549060850368684"
+        - "remove C_0006291790658696054666"
+        - "remove C_0012240543444951965339"
+        - "remove C_0011837307862571174541"
+        - "remove C_0003769135706557701272"
+        - "remove C_0013302321448474623153"
+        - "remove C_0005465509528876370002"
+        - "remove C_0003981560271957445032"
+        - "remove C_0004010203474444183048"
+        - "scale 0.8"
+
+  gui:
+    type: class
+    glob:
+      - "C:/Users/User/QtProjects/chess/boardmodel.cpp"
+      - "C:/Users/User/QtProjects/chess/gamecontroller.cpp"
+      - "C:/Users/User/QtProjects/chess/pieceUtils.cpp"
+      - "C:/Users/User/QtProjects/chess/main.cpp"
+      - "C:/Users/User/QtProjects/chess/game_client.cpp"
+    exclude:
+      namespaces:
+        - std
+    plantuml:
+      after:
+        - "hide empty members"
+        - "remove @unlinked"
+        - "remove C_0015597186919403043605"
+        - "remove C_0017831906191313009638"
+        - "remove C_0004226400438682174931"
+        - "remove C_0014097515694997472292"
+        - "remove C_0015112108979621633422"
+        - "remove C_0002473749708249590475"
+        - "remove C_0012072903533323154853"
+        - "remove C_0010358599209595726571"
+        - "remove C_0004007104907368024212"
+        - "remove C_0004201687326288072348"
+        - "remove C_0013071880978633431303"
+        - "remove C_0012240543444951965339"
+        - "remove C_0003981560271957445032"
+        - "remove C_0005465509528876370002"
+        - "remove C_0011837307862571174541"
+        - "remove C_0013302321448474623153"
+        - "remove C_0003769135706557701272"
+        - "scale 0.8"
+
+  console_ui:
+    type: class
+    glob:
+      - "C:/Users/User/QtProjects/chess/consolegameui.cpp"
+      - "C:/Users/User/QtProjects/chess/main_console.cpp"
+      - "C:/Users/User/QtProjects/chess/game_client.cpp"
+    exclude:
+      namespaces:
+        - std
+    plantuml:
+      after:
+        - "hide empty members"
+        - "remove @unlinked"
+        - "remove C_0015597186919403043605"
+        - "remove C_0017831906191313009638"
+        - "remove C_0004226400438682174931"
+        - "remove C_0014097515694997472292"
+        - "remove C_0015112108979621633422"
+        - "remove C_0002473749708249590475"
+        - "remove C_0012072903533323154853"
+        - "remove C_0010358599209595726571"
+        - "remove C_0004007104907368024212"
+        - "remove C_0004201687326288072348"
+        - "remove C_0013071880978633431303"
+        - "remove C_0012240543444951965339"
+        - "remove C_0003981560271957445032"
+        - "remove C_0012072903533323154853"
+        - "remove C_0003769135706557701272"
+        - "remove C_0005465509528876370002"
+        - "remove C_0013302321448474623153"
+        - "remove C_0011837307862571174541"
+        - "scale 0.8"
