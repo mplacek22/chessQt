@@ -5,7 +5,6 @@ Board::Board() {
 }
 
 void Board::initialize() {
-
     set({0, 0}, {PieceType::ROOK,   Color::WHITE});
     set({0, 1}, {PieceType::KNIGHT, Color::WHITE});
     set({0, 2}, {PieceType::BISHOP, Color::WHITE});
@@ -28,57 +27,6 @@ void Board::initialize() {
     set({7, 5}, {PieceType::BISHOP, Color::BLACK});
     set({7, 6}, {PieceType::KNIGHT, Color::BLACK});
     set({7, 7}, {PieceType::ROOK,   Color::BLACK});
-
-    // double check
-    // set({0, 4}, {PieceType::KING,   Color::WHITE});
-    // set({4, 4}, {PieceType::ROOK,   Color::WHITE});
-    // set({4, 1}, {PieceType::BISHOP, Color::WHITE});
-    // set({7, 4}, {PieceType::KING,   Color::BLACK});
-    // set({7, 0}, {PieceType::ROOK,   Color::BLACK});
-    // set({7, 7}, {PieceType::ROOK,   Color::BLACK});
-
-    // almost check
-    // set({0, 4}, {PieceType::KING,   Color::WHITE});
-    // set({0, 0}, {PieceType::ROOK,   Color::WHITE});
-    // set({2, 6}, {PieceType::BISHOP, Color::WHITE});
-    // set({7, 4}, {PieceType::KING,   Color::BLACK});
-    // set({7, 0}, {PieceType::ROOK,   Color::BLACK});
-    // set({7, 7}, {PieceType::ROOK,   Color::BLACK});
-
-    // pinned pieces
-    // set({0, 4}, {PieceType::KING,   Color::WHITE});
-    // set({1, 4}, {PieceType::KNIGHT, Color::WHITE});
-    // set({7, 4}, {PieceType::ROOK,   Color::BLACK});
-    // set({6, 0}, {PieceType::KING,   Color::BLACK});
-
-    // pinned pieces 2
-    // set({0, 4}, {PieceType::KING,   Color::WHITE});
-    // set({1, 4}, {PieceType::BISHOP, Color::WHITE});
-    // set({7, 4}, {PieceType::ROOK,   Color::BLACK});
-    // set({6, 0}, {PieceType::KING,   Color::BLACK});
-
-    // almost checkmate
-    // set({5, 5}, {PieceType::KING,   Color::WHITE});
-    // set({5, 6}, {PieceType::QUEEN,  Color::WHITE});
-    // set({7, 7}, {PieceType::KING,   Color::BLACK});
-    // set({7, 1}, {PieceType::KNIGHT, Color::BLACK});
-
-    // castling
-    // set({0, 0}, {PieceType::ROOK,   Color::WHITE});
-    // set({0, 1}, {PieceType::KNIGHT, Color::WHITE});
-    // set({0, 4}, {PieceType::KING,   Color::WHITE});
-    // set({0, 7}, {PieceType::ROOK,   Color::WHITE});
-    // set({7, 0}, {PieceType::ROOK,   Color::BLACK});
-    // set({7, 4}, {PieceType::KING,   Color::BLACK});
-    // set({7, 5}, {PieceType::BISHOP, Color::BLACK});
-    // set({7, 7}, {PieceType::ROOK,   Color::BLACK});
-    // set({4, 4}, {PieceType::ROOK,   Color::WHITE});
-
-    // insufficient material
-    // set({0, 4}, {PieceType::KING,   Color::WHITE});
-    // set({1, 7}, {PieceType::BISHOP, Color::WHITE});
-    // set({7, 7}, {PieceType::KING,   Color::BLACK});
-    // set({4, 4}, {PieceType::BISHOP, Color::BLACK});
 }
 
 void Board::set(const Coordinate& coordinate, std::optional<Piece> piece) {
