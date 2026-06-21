@@ -14,12 +14,14 @@ void Game::restart() {
     winner_ = std::nullopt;
     drawCause_ = std::nullopt;
     movesHistory_.clear();
+    halfMoveClock = 0;
     start();
 }
 
 void Game::executeMove(const Move &move) {
     board_.move(move.source, move.destination);
     board_.at(move.destination)->hasMoved = true;
+    updateHalfMoveClock(move);
     switch (move.moveType) {
         case MoveType::ENPASSANT: {
             // remove the captured piece from the board
@@ -107,7 +109,7 @@ void Game::updateWinner() {
 }
 
 bool Game::isFiftyMoveRule() const {
-    return movesHistory_.size() >= 50;
+    return halfMoveClock >= 100;
 }
 
 bool Game::isRepetition() const {
@@ -182,6 +184,16 @@ void Game::setDraw(DrawCause drawCause) {
 void Game::setPendingPromotionMove(const std::optional<Move> &moveOpt) {
     pendingPromotionMove_ = moveOpt;
     mediator_->onPromotionPending(moveOpt.has_value());
+}
+
+void Game::updateHalfMoveClock(const Move &move)
+{
+    if (move.movingPieceType == PieceType::PAWN || move.isCapture){
+        halfMoveClock = 0;
+    }
+    else {
+        ++halfMoveClock;
+    }
 }
 
 void Game::processMove(const Move &currentMove) {

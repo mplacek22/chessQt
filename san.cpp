@@ -89,8 +89,8 @@ std::string san::toSAN(const Move &move) {
 }
 
 Coordinate san::coordinateFromString(const std::string &raw) {
-    if (raw.size() < 2) {
-        throw InvalidSanException("Coordinate too short: " + raw);
+    if (raw.size() != 2) {
+        throw InvalidSanException("Coordinate length must be equal 2: " + raw);
     }
     if (raw[0] < 'a' || raw[0] > 'h' ||
         raw[1] < '1' || raw[1] > '8') {

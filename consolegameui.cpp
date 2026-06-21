@@ -43,22 +43,21 @@ void ConsoleGameUI::onPendingPromotionChanged(bool pendingPromotion) {
     std::cout << "Pawn promotion! Choose piece [Q, R, B, N]: " << std::endl;
     while (true) {
         std::string input;
-        if (!std::getline(std::cin, input)) {
-            IGameClient::promotePawn(PieceType::QUEEN); // default
-            return;
-        }
-        if (input.empty()) continue;
+        std::getline(std::cin, input);
+        const auto start = input.find_first_not_of(" \t");
+        const auto end   = input.find_last_not_of(" \t");
+        if (start != std::string::npos)
+            input = input.substr(start, end - start + 1);
 
-        try {
-            if (PieceType type = san::charToPieceType(toupper(input[0]));
-                std::ranges::find(PROMOTION_PIECES, type)
-                != PROMOTION_PIECES.end()) {
-                IGameClient::promotePawn(type);
-                return;
-            }
-        } catch (const InvalidSanException &) {
+        if (input.length() == 1) {
+            try {
+                if (PieceType type = san::charToPieceType(toupper(input[0]));
+                    std::ranges::find(PROMOTION_PIECES, type) != PROMOTION_PIECES.end()) {
+                    IGameClient::promotePawn(type);
+                    return;
+                }
+            } catch (const InvalidSanException &) {}
         }
-
         std::cout << "Invalid choice. Enter Q, R, B or N: " << std::endl;
     }
 }
@@ -117,9 +116,9 @@ ConsoleGameUI::PromptOutcome ConsoleGameUI::promptCoordinate(const std::string &
         if (!std::getline(std::cin, input)) return {PromptResult::QUIT, {}};
 
         const auto start = input.find_first_not_of(" \t");
-        if (start == std::string::npos) continue;
-        const auto end = input.find_last_not_of(" \t");
-        input = input.substr(start, end - start + 1);
+        const auto end   = input.find_last_not_of(" \t");
+        if (start != std::string::npos)
+            input = input.substr(start, end - start + 1);
 
         if (input == "q" || input == "quit") return {PromptResult::QUIT, {}};
         if (input == "r" || input == "restart") return {PromptResult::RESTART, {}};

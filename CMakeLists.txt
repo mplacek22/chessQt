@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.21.1)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(chess VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -34,8 +35,6 @@ qt_standard_project_setup(REQUIRES 6.10)
 
 qt_add_executable(appchess
         main.cpp
-        game_mediator.cpp
-        game_mediator.cpp
 )
 
 qt_add_qml_module(appchess

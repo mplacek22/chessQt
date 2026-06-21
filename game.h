@@ -83,6 +83,7 @@ private:
     std::optional<Move> pendingPromotionMove_;
     std::optional<Color> winner_;
     std::optional<DrawCause> drawCause_;
+    int halfMoveClock = 0;
 
     void switchPlayer();
 
@@ -107,4 +108,6 @@ private:
     void setDraw(DrawCause drawCause);
 
     void setPendingPromotionMove(const std::optional<Move> &moveOpt);
+
+    void updateHalfMoveClock(const Move& move);
 };
